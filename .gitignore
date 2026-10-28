@@ -42,3 +42,6 @@ next-env.d.ts
 
 # 지울 파일을 잠시 옮겨 두는 폴더 (사용자가 확인 후 직접 삭제)
 /trash-can/
+
+# 시험 화면 캡처 등 결과물
+/test-results/
