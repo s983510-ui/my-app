@@ -140,3 +140,93 @@ test("표 확인일은 보이는 항목 중 가장 오래된 날이에요", () =
   assert.equal(tableCheckedAt(table, false), "2026-10-20");
   assert.equal(tableCheckedAt([], false), null);
 });
+
+// ── 작업 9·10: AI 결과 검사, 종류 확정·후보 ──
+import { sanitizeExtraction, decideCategory, pickCandidates, emptyProperty } from "../lib/categorize.ts";
+import { isInSource } from "../lib/match.ts";
+import { stubExtract, AiError } from "../lib/ai.ts";
+
+const src = "물건관리번호: 2026-0101-001234\n소재지: 경상남도 창녕군 가상면 가상리 123\n지목: 답\n면적: 1,234 ㎡\n최저입찰가: 12,340,000원";
+
+test("원문 비교: 공백·쉼표를 빼고 같으면 원문에 있는 값이에요", () => {
+  assert.equal(isInSource("1234㎡", src), true);
+  assert.equal(isInSource("1,234㎡", src), true);
+  assert.equal(isInSource("경상남도 창녕군 가상면 가상리 123", src), true);
+  assert.equal(isInSource("경상남도 창녕군 다른면", src), false);
+  assert.equal(isInSource("", src), false);
+});
+
+test("AI가 원문에 없는 값을 넣으면 비우고, 목록 밖 지목·종류는 버려요", () => {
+  const ex = sanitizeExtraction(
+    {
+      property: { 소재지: "경상남도 창녕군 다른면 999", 지목: "답", 면적: "1234㎡", 용도지역: "농림지역", 엉뚱한칸: "x" },
+      category: "apartment",
+      confidence: 3,
+      clues: ["답", "지어낸단서"],
+      candidates: ["farmland", "farmland", "nope", "land"],
+    },
+    src,
+  );
+  assert.equal(ex.property["소재지"], null, "원문에 없는 소재지는 비워요");
+  assert.equal(ex.property["지목"], "답");
+  assert.equal(ex.property["면적"], "1234㎡");
+  assert.equal(ex.property["용도지역"], null);
+  assert.ok(!("엉뚱한칸" in ex.property));
+  assert.equal(ex.category, null, "목록 밖 종류는 버려요");
+  assert.equal(ex.confidence, 1, "확신도는 0~1로 잘라요");
+  assert.deepEqual(ex.clues, ["답"], "원문에 없는 단서는 빼요");
+  assert.deepEqual(ex.candidates, ["farmland", "land"]);
+});
+
+test("지목 칸에 지목 28가지가 아닌 값이 오면 비워요", () => {
+  const ex = sanitizeExtraction({ property: { 지목: "농지" } }, "지목: 농지");
+  assert.equal(ex.property["지목"], null);
+});
+
+test("모양이 엉망인 AI 응답도 안전하게 빈 결과가 돼요", () => {
+  for (const raw of [null, "문자열", 42, [], { property: "x", clues: "x", candidates: 3 }]) {
+    const ex = sanitizeExtraction(raw, src);
+    assert.equal(ex.category, null);
+    assert.deepEqual(ex.clues, []);
+  }
+});
+
+test("확신도 0.9 + 원문에 있는 단서 → 확정해요", () => {
+  const ex = sanitizeExtraction({ category: "farmland", confidence: 0.9, clues: ["답"], property: { 지목: "답" } }, src);
+  assert.deepEqual(decideCategory(ex, src), { category: "farmland", candidates: null });
+});
+
+test("확신도 0.9라도 원문에 있는 단서가 없으면 후보로 보내요 (PLAN 질문 3-나)", () => {
+  const ex = sanitizeExtraction({ category: "farmland", confidence: 0.9, clues: ["지어낸단서"] }, src);
+  const d = decideCategory(ex, src);
+  assert.equal(d.category, null);
+  assert.equal(d.candidates[0], "farmland");
+  assert.ok(d.candidates.length >= 2 && d.candidates.length <= 3);
+});
+
+test("확신도 0.6이면 후보 2~3개로 보내요", () => {
+  const ex = sanitizeExtraction({ category: "land", confidence: 0.6, clues: ["답"], candidates: ["farmland"] }, src);
+  const d = decideCategory(ex, src);
+  assert.equal(d.category, null);
+  assert.deepEqual(d.candidates.slice(0, 2), ["land", "farmland"]);
+});
+
+test("AI가 실패하면 판정 단서로 후보 2~3개를 뽑아요", () => {
+  const property = emptyProperty();
+  property["지목"] = "답";
+  const c = pickCandidates("지목: 답, 논으로 쓰이는 농지", property, []);
+  assert.equal(c[0], "farmland");
+  assert.ok(c.length >= 2 && c.length <= 3);
+});
+
+test("단서가 하나도 안 맞으면 8개 전체를 보여줘요", () => {
+  assert.equal(pickCandidates("아무 단서 없는 글입니다", emptyProperty(), []).length, 8);
+});
+
+test("시험용 흉내(AI_STUB): 칸을 읽고 종류를 정해요, [AI_FAIL]이면 실패해요", () => {
+  const raw = stubExtract(src);
+  const ex = sanitizeExtraction(raw, src);
+  assert.equal(ex.property["지목"], "답");
+  assert.equal(decideCategory(ex, src).category, "farmland");
+  assert.throws(() => stubExtract(src + "\n[AI_FAIL]"), AiError);
+});
