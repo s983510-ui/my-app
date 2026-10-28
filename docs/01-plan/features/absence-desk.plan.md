@@ -6,8 +6,8 @@
 > **버전**: 0.1.0
 > **작성자**: 조인우
 > **작성일**: 2026-10-28
-> **상태**: 초안 (검토 필요)
-> **PDCA 단계**: PM ✓ → **Plan** → Design → Do → Check → Act
+> **상태**: **확정** (2026-10-28)
+> **PDCA 단계**: PM ✓ → Plan ✓ → **Design** → Do → Check → Act
 > **근거 문서**: [PRD.md](../../../PRD.md) · 양식: bkit `plan` 템플릿
 
 ---
@@ -50,7 +50,7 @@ PRD 1~2번 참고. 지금은 물건을 찾는 데 시간이 오래 걸리고, �
 ### 1.3 관련 문서
 
 - 기획서: [PRD.md](../../../PRD.md)
-- 다음 문서 (예정): `docs/02-design/features/absence-desk.design.md`
+- 다음 문서: [설계서](../../02-design/features/absence-desk.design.md)
 
 ---
 
@@ -232,8 +232,8 @@ docs/             PDCA 문서 (01-plan, 02-design, 03-analysis, 04-report)
 
 ## 10. 다음 단계
 
-1. [ ] 이 계획서 검토·확정
-2. [ ] 설계서 작성: `docs/02-design/features/absence-desk.design.md` (화면 구성, DB 테이블, AI 지시문, 접근 코드 방식)
+1. [x] 이 계획서 검토·확정 (2026-10-28)
+2. [x] 설계서 작성: `docs/02-design/features/absence-desk.design.md` (화면 구성, DB 테이블, AI 지시문, 접근 코드 방식)
 3. [ ] Supabase 키 준비 (설계서에서 정확한 이름을 안내해요)
 4. [ ] 개발 시작 (Do)
 
@@ -244,3 +244,4 @@ docs/             PDCA 문서 (01-plan, 02-design, 03-analysis, 04-report)
 | 버전 | 날짜 | 내용 | 작성자 |
 |---|---|---|---|
 | 0.1 | 2026-10-28 | 첫 초안 (PRD 확정본 기준) | 조인우 |
+| 1.0 | 2026-10-28 | 확정 | 조인우 |
