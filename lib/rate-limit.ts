@@ -2,8 +2,9 @@
 // Design Ref: §4.2 1·2단계, §8 횟수 제한 / PRD must 1 규칙 4, 7번
 // 횟수는 서버 메모리로 세요. 서버가 다시 켜지면 초기화되고, Vercel 서버가 여러 대면 서버마다 따로 세요(PRD 7번에서 받아들인 한계).
 
-export const TEXT_MIN = 20;
-export const TEXT_MAX = 10000;
+import { TEXT_MAX, TEXT_MIN } from "./limits-shared.ts";
+
+export { TEXT_MAX, TEXT_MIN };
 
 /** 붙여넣은 글의 길이가 20~10,000자인지 확인해요. */
 export function isTextLengthOk(text: unknown): text is string {

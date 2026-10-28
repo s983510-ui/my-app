@@ -1,26 +1,42 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/*
+  디자인 값 (DESIGN §3.4)
+  - 색은 아래 색상 코드만 써요. Tailwind 기본 색(oklch)과 "bg-색/50" 같은 투명도 표기는 금지예요 (Chrome 109 호환).
+  - 연한 색이 더 필요하면 여기에 색상 코드를 추가해요.
+*/
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-navy: #163a75;
+  --color-blue: #2557a8;
+  --color-line: #dbe5f4;
+  --color-card: #f1f5fb;
+  --color-accent: #ed1c24;
+  --color-notice-bg: #fef3c7;
+  --color-notice-text: #92400e;
+  --color-error-bg: #fdecec;
+  --color-error-text: #b91c1c;
+  --color-muted: #5b6678;
+  --color-good: #15803d;
+  --color-ink: #1b2433;
+  --color-page: #f7f9fc;
+  --font-sans: var(--font-noto-sans-kr), "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #f7f9fc;
+  color: #1b2433;
+  font-family: var(--font-sans);
+  /* 한글 단어가 줄 끝에서 중간에 끊기지 않게 해요 */
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* 인쇄할 때는 입력 칸·버튼을 숨기고 결과만 남겨요 (DESIGN §3.1 [인쇄]) */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #ffffff;
+  }
 }

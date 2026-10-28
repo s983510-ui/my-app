@@ -3,21 +3,10 @@
 // 주의사항 내용은 AI가 아니라 이 표에서만 나와요. 검토를 마친(confirmed) 항목만 화면에 보여요(DESIGN 결정 8-가).
 import type { CategoryId, CautionItem, PropertyInfo } from "./types.ts";
 import { CAUTIONS } from "../data/cautions.ts";
+import type { CautionViewData } from "./view-types.ts";
 
 /** 화면으로 보내는 항목 하나 (설명 원문 대신 검토된 쉬운 설명을 보내요) */
-export type CautionView = {
-  id: string;
-  title: string;
-  plain: string;
-  required: boolean;
-  highlight: boolean;
-  steps: string[];
-  agency: string;
-  sources: { label: string; url: string }[];
-  checkedAt: string;
-  /** 검토 전 항목인지 (내 PC 시험에서만 true가 나와요) */
-  unreviewed: boolean;
-};
+export type CautionView = CautionViewData;
 
 export class TableIncompleteError extends Error {
   constructor(category: string) {
