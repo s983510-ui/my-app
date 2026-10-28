@@ -72,3 +72,71 @@ test("접속자 주소는 x-forwarded-for의 첫 번째 값을 써요", () => {
   assert.equal(clientIp(new Headers({ "x-real-ip": "5.5.5.5" })), "5.5.5.5");
   assert.equal(clientIp(new Headers()), "unknown");
 });
+
+// ── 작업 8: 표 찾기·강조·필수 검사 (시험용 가상 표) ──
+import { cautionsFor, isHighlighted, tableCheckedAt, TableIncompleteError } from "../lib/cautions.ts";
+
+function item(id, overrides = {}) {
+  return {
+    id, category: id.replace(/-\d+$/, ""), title: id, text: "원문", plain: "쉬운 설명",
+    required: false, highlightWhen: null, steps: [], agency: "기관",
+    sources: [{ label: "출처", url: "https://www.law.go.kr/" }],
+    status: "confirmed", checkedAt: "2026-10-28", ...overrides,
+  };
+}
+const farmlandRule = { field: "지목", in: ["전", "답", "과수원"] };
+const table = [
+  item("farmland-01", { required: true, highlightWhen: farmlandRule, checkedAt: "2026-10-20" }),
+  item("farmland-02", { required: true }),
+  item("farmland-03"),
+  item("farmland-04", { status: "needs-check" }),
+  item("forest-01", { required: true, status: "needs-check" }),
+  item("vehicle-01"),
+];
+
+test("지목이 정확히 '답'이면 강조하고, '답변' 같은 비슷한 글자는 강조하지 않아요", () => {
+  assert.equal(isHighlighted(table[0], { 지목: "답" }), true);
+  assert.equal(isHighlighted(table[0], { 지목: " 답 " }), true);
+  assert.equal(isHighlighted(table[0], { 지목: "답변" }), false);
+  assert.equal(isHighlighted(table[0], { 지목: null }), false);
+  assert.equal(isHighlighted(table[0], {}), false);
+});
+
+test("그 종류의 검토 완료 항목만, 필수 → 강조 → 번호 순으로 보여줘요", () => {
+  const views = cautionsFor("farmland", { 지목: "답" }, table, false);
+  assert.deepEqual(views.map((v) => v.id), ["farmland-01", "farmland-02", "farmland-03"]);
+  assert.equal(views[0].highlight, true);
+  assert.ok(!views.some((v) => v.id === "farmland-04"), "검토 전 항목은 빠져요");
+  assert.ok(!("text" in views[0]), "설명 원문은 화면으로 보내지 않아요");
+});
+
+test("필수 항목이 검토 전이면 표가 준비되지 않았다고 알려요", () => {
+  assert.throws(() => cautionsFor("forest", {}, table, false), TableIncompleteError);
+});
+
+test("필수 항목이 아예 없는 종류도 표가 준비되지 않았다고 알려요", () => {
+  assert.throws(() => cautionsFor("vehicle", {}, table, false), TableIncompleteError);
+});
+
+test("내 PC 시험에서는 검토 전 항목도 '검토 전' 표시와 함께 볼 수 있어요", () => {
+  const views = cautionsFor("forest", {}, table, true);
+  assert.equal(views.length, 1);
+  assert.equal(views[0].unreviewed, true);
+});
+
+test("운영(production)에서는 검토 전 항목 보기가 절대 켜지지 않아요", async () => {
+  const { showUnreviewed } = await import("../lib/cautions.ts");
+  const old = { env: process.env.NODE_ENV, flag: process.env.SHOW_UNREVIEWED };
+  process.env.SHOW_UNREVIEWED = "1";
+  process.env.NODE_ENV = "production";
+  assert.equal(showUnreviewed(), false);
+  process.env.NODE_ENV = "development";
+  assert.equal(showUnreviewed(), true);
+  process.env.NODE_ENV = old.env;
+  if (old.flag === undefined) delete process.env.SHOW_UNREVIEWED; else process.env.SHOW_UNREVIEWED = old.flag;
+});
+
+test("표 확인일은 보이는 항목 중 가장 오래된 날이에요", () => {
+  assert.equal(tableCheckedAt(table, false), "2026-10-20");
+  assert.equal(tableCheckedAt([], false), null);
+});
