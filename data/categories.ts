@@ -2,7 +2,7 @@
 // Design Ref: §4.5 물건 종류 표 — 이 파일이 종류 목록의 단 하나의 기준이에요.
 // Design Ref: §4.2 6단계 — AI가 실패하거나 확신이 낮을 때, 여기 단서가 원문에 많이 나온 순서로 후보를 뽑아요.
 // 지목 이름은 「공간정보의 구축 및 관리 등에 관한 법률」의 지목 28가지를 기준으로 나눴어요.
-import type { Category, CategoryId } from "../lib/types";
+import type { Category, CategoryId } from "../lib/types.ts";
 
 export const CATEGORIES: Category[] = [
   {
