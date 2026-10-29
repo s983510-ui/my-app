@@ -1,6 +1,6 @@
-// POST /api/cautions — 후보 중 하나를 고른 뒤, 그 종류의 주의사항을 돌려줘요.
+// POST /api/cautions — 후보 중 하나를 고른 뒤, 그 종류의 주의사항을 돌려줘요. AI를 쓰지 않아서 횟수는 따로 세요.
 // Design Ref: §4.1 마지막 줄, §4.5 요청·응답 / 요청 횟수는 /api/analyze와 함께 세요.
-import { clientIp, takeRequest } from "@/lib/rate-limit.ts";
+import { clientIp, takeLightRequest } from "@/lib/rate-limit.ts";
 import { isCategoryId } from "@/data/categories.ts";
 import { emptyProperty } from "@/lib/categorize.ts";
 import { PROPERTY_FIELDS } from "@/lib/types.ts";
@@ -14,7 +14,7 @@ const VALUE_MAX = 100;
 export const maxDuration = 10;
 
 export async function POST(request: Request) {
-  if (!takeRequest(clientIp(request.headers)).ok) return errorResponse("RATE_LIMITED");
+  if (!takeLightRequest(clientIp(request.headers)).ok) return errorResponse("RATE_LIMITED");
 
   // 이 요청은 종류 id와 짧은 물건 정보뿐이라 본문을 작게 받아요.
   const read = await readJsonLimited(request, 16384);

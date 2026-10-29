@@ -99,11 +99,26 @@ test("목록 밖 종류를 고르면 400 BAD_CATEGORY", { skip }, async () => {
   assert.equal(r.body.error.code, "BAD_CATEGORY");
 });
 
-test("같은 접속자가 1분에 너무 많이 보내면 429, 두 API가 횟수를 함께 세요", { skip }, async () => {
+test("AI를 쓰는 요청(분석·사진 읽기)은 횟수를 함께 세고, 후보 고르기는 따로 세요", { skip }, async () => {
   const ip = "10.250.250.250";
+  const PNG0 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
   let last;
   for (let i = 0; i < 40; i++) {
-    last = await post(i % 2 ? "/api/cautions" : "/api/analyze", i % 2 ? { categoryId: "land", property: {} } : { text: "짧은 글" }, ip);
+    last = await post(i % 2 ? "/api/ocr" : "/api/analyze", i % 2 ? { image: PNG0, consent: true } : { text: "짧은 글" }, ip);
+    if (last.status === 429) break;
+  }
+  assert.equal(last.status, 429);
+  assert.equal(last.body.error.code, "RATE_LIMITED");
+  // AI 횟수를 다 써도 후보 고르기는 따로 세서 아직 돼요
+  const light = await post("/api/cautions", { categoryId: "land", property: {} }, ip);
+  assert.equal(light.status, 200);
+});
+
+test("후보 고르기·링크 불러오기도 한 접속자가 1분에 너무 많이 보내면 429", { skip }, async () => {
+  const ip = "10.250.250.251";
+  let last;
+  for (let i = 0; i < 40; i++) {
+    last = await post(i % 2 ? "/api/cautions" : "/api/fetch-link", i % 2 ? { categoryId: "land", property: {} } : { url: "https://evil.com/" }, ip);
     if (last.status === 429) break;
   }
   assert.equal(last.status, 429);

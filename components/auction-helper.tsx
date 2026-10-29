@@ -36,7 +36,7 @@ async function postJson<T>(url: string, body: unknown): Promise<{ ok: true; data
   }
 }
 
-export default function AuctionHelper({ initialCheckedAt }: { initialCheckedAt: string | null }) {
+export default function AuctionHelper({ initialCheckedAt, version }: { initialCheckedAt: string | null; version: string }) {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -124,7 +124,7 @@ export default function AuctionHelper({ initialCheckedAt }: { initialCheckedAt: 
           </>
         )}
       </main>
-      <footer className="px-4 pb-6 text-center text-xs text-muted">입력한 글과 결과는 저장되지 않아요.</footer>
+      <footer className="px-4 pb-6 text-center text-xs text-muted">입력한 글과 결과는 저장되지 않아요. <span className="block">배포 버전: {version}</span></footer>
     </>
   );
 }

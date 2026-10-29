@@ -4,7 +4,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { maskPersonalInfo, MASK_TOKEN } from "../lib/mask.ts";
-import { isTextLengthOk, takeRequest, clientIp, resetRateLimitForTest, TEXT_MAX } from "../lib/rate-limit.ts";
+import { isTextLengthOk, takeRequest, takeLightRequest, clientIp, resetRateLimitForTest, TEXT_MAX } from "../lib/rate-limit.ts";
 
 // ── 작업 6: 개인정보 지우기 (DESIGN §4.4 표의 예 전부) ──
 const shouldMask = [
@@ -243,4 +243,18 @@ test("시험용 흉내(AI_STUB): 칸을 읽고 종류를 정해요, [AI_FAIL]이
   assert.equal(ex.property["지목"], "답");
   assert.equal(decideCategory(ex, src).category, "farmland");
   assert.throws(() => stubExtract(src + "\n[AI_FAIL]"), AiError);
+});
+
+test("AI를 안 쓰는 요청(후보 고르기·링크)은 AI 횟수와 따로 세요 (1분 20회)", () => {
+  resetRateLimitForTest();
+  const t0 = Date.UTC(2026, 9, 29, 3, 0, 0);
+  for (let i = 0; i < 20; i++) assert.equal(takeLightRequest("5.5.5.5", t0 + i).ok, true);
+  assert.equal(takeLightRequest("5.5.5.5", t0 + 100).ok, false, "21번째는 막아요");
+  assert.equal(takeLightRequest("6.6.6.6", t0 + 100).ok, true, "다른 접속자는 따로 세요");
+  assert.equal(takeLightRequest("5.5.5.5", t0 + 60_001).ok, true, "1분이 지나면 다시 돼요");
+  // AI 횟수는 줄지 않아요
+  resetRateLimitForTest();
+  for (let i = 0; i < 20; i++) takeLightRequest("7.7.7.7", t0);
+  for (let i = 0; i < 5; i++) assert.equal(takeRequest("7.7.7.7", t0 + i).ok, true, "AI 요청 5회는 그대로 쓸 수 있어요");
+  assert.equal(takeRequest("7.7.7.7", t0 + 10).ok, false);
 });
