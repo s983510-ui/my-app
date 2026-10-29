@@ -247,8 +247,8 @@ export const CAUTIONS: CautionItem[] = [
     ],
     agency: "읍·면·동 주민센터 (전입세대 열람)",
     sources: [law("주택임대차보호법", "제3조"), law("국세징수법", "제92조"), IROS],
-    status: "needs-check",
-    checkedAt: DRAFT_DATE,
+    status: "confirmed",
+    checkedAt: "2026-10-29",
   },
   {
     id: "building-res-02",
@@ -310,8 +310,8 @@ export const CAUTIONS: CautionItem[] = [
     ],
     agency: "관할 세무서 (상가 임대차 현황, 열람이 제한될 수 있음)",
     sources: [law("상가건물 임대차보호법", "제3조"), law("국세징수법", "제92조"), IROS],
-    status: "needs-check",
-    checkedAt: DRAFT_DATE,
+    status: "confirmed",
+    checkedAt: "2026-10-29",
   },
   {
     id: "building-nonres-02",
