@@ -58,6 +58,7 @@ export function cautionsFor(
       id: item.id,
       title: item.title,
       plain: item.plain,
+      notice: item.notice && (item.noticeStatus === "confirmed" || includeUnreviewed) ? item.notice : "",
       required: item.required,
       highlight: isHighlighted(item, property),
       steps: item.steps,

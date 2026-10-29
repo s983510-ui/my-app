@@ -6,6 +6,8 @@ export type CautionViewData = {
   id: string;
   title: string;
   plain: string;
+  /** 공고문 문체 문장 (검토 전이면 빈 글) */
+  notice: string;
   required: boolean;
   highlight: boolean;
   steps: string[];

@@ -54,6 +54,7 @@ for (const id of order) {
     lines.push("");
     lines.push(`- **설명 원문:** ${item.text}`);
     lines.push(`- **쉬운 설명 (화면에 보임):** ${item.plain}`);
+    if (item.notice) lines.push(`- **공고문 문장 (직원용 문안, ${item.noticeStatus === "confirmed" ? "확인 완료" : "검토 전"}):** ${item.notice}`);
     if (item.highlightWhen) lines.push(`- **강조 조건:** '${item.highlightWhen.field}' 값이 ${item.highlightWhen.in.join("·")} 중 하나일 때`);
     lines.push(`- **참고 절차:** ${item.steps.map((s, i) => `${i + 1}) ${s}`).join(" ")}`);
     lines.push(`- **담당 기관:** ${item.agency}`);
