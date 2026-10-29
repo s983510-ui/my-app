@@ -9,6 +9,9 @@ import { TableIncompleteError } from "@/lib/cautions.ts";
 import { buildCategoryResult, namedCandidates } from "@/lib/result.ts";
 import { errorResponse, readJsonLimited } from "@/lib/api.ts";
 
+// 서버가 10초 안에 끝내도록 알려요 (AI 6초 제한 + 여유, DESIGN §7).
+export const maxDuration = 10;
+
 export async function POST(request: Request) {
   // 1. 요청 횟수 (두 API 공통)
   if (!takeRequest(clientIp(request.headers)).ok) return errorResponse("RATE_LIMITED");

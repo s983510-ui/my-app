@@ -11,19 +11,27 @@ import ResultActions from "./result-actions.tsx";
 import type { AnalyzeResponse, CautionsResponse, ErrorResponse, NamedCategory } from "@/lib/view-types.ts";
 
 const NETWORK_ERROR = "연결에 문제가 있어요. 잠시 후 다시 시도해 주세요.";
+const TIMEOUT_ERROR = "시간이 너무 오래 걸려요. 잠시 후 다시 시도해 주세요.";
+// 서버 제한(10초)보다 조금 길게 기다리고, 그래도 답이 없으면 멈춰요.
+const WAIT_MS = 15000;
 
 async function postJson<T>(url: string, body: unknown): Promise<{ ok: true; data: T } | { ok: false; message: string }> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), WAIT_MS);
   try {
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
+      signal: controller.signal,
     });
     const data = await res.json();
     if (!res.ok) return { ok: false, message: (data as ErrorResponse)?.error?.message ?? NETWORK_ERROR };
     return { ok: true, data: data as T };
   } catch {
-    return { ok: false, message: NETWORK_ERROR };
+    return { ok: false, message: controller.signal.aborted ? TIMEOUT_ERROR : NETWORK_ERROR };
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -98,13 +106,19 @@ export default function AuctionHelper({ initialCheckedAt }: { initialCheckedAt: 
             aiFallback={analysis.aiFallback}
           />
         )}
-        {analysis && !cautions && analysis.candidates && (
-          <CategoryPicker candidates={analysis.candidates} aiFallback={analysis.aiFallback} busy={busy} onPick={pick} />
+        {analysis && analysis.candidates && (
+          <CategoryPicker
+            candidates={analysis.candidates}
+            aiFallback={analysis.aiFallback}
+            busy={busy}
+            selectedId={category ? category.id : null}
+            onPick={pick}
+          />
         )}
         {category && cautions && (
           <>
             <CautionList cautions={cautions} />
-            <ResultActions category={category} cautions={cautions} onReset={reset} />
+            <ResultActions category={category} cautions={cautions} checkedAt={checkedAt} onReset={reset} />
           </>
         )}
       </main>

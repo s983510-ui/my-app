@@ -43,6 +43,11 @@ export default function PasteBox({ value, onChange, onSubmit, busy }: Props) {
           {busy ? "분석하는 중… (최대 10초)" : "분석하기"}
         </button>
       </div>
+      {length >= TEXT_MAX && (
+        <p className="mt-1 text-sm text-error-text">
+          {TEXT_MAX.toLocaleString("ko-KR")}자까지만 들어가요. 넘는 부분은 잘렸을 수 있으니 필요한 부분만 붙여넣어 주세요.
+        </p>
+      )}
       {value.trim().length > 0 && value.trim().length < TEXT_MIN && (
         <p className="mt-1 text-sm text-muted">{TEXT_MIN}자 이상 붙여넣으면 분석할 수 있어요.</p>
       )}

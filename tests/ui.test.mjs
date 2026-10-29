@@ -127,3 +127,46 @@ test("오류 6가지와 연결 문제 문구가 화면에 나와요", { skip, ti
     await browser.close();
   }
 });
+
+// ── Gap 9·10·11: 글자 수 안내, 후보 바꾸기, 응답이 늦을 때 ──
+test("10,000자가 차면 안내가 나오고, 후보를 고른 뒤에도 다른 종류로 바꿀 수 있어요", { skip, timeout: 60000 }, async () => {
+  const { chromium } = createRequire(import.meta.url)("playwright");
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 390, height: 900 } });
+  try {
+    await page.goto(BASE + "/");
+    await page.fill("#paste", "가".repeat(10500));
+    assert.ok(await page.getByText("10,000자까지만 들어가요").isVisible());
+    assert.ok(await page.getByText("10,000 / 10,000자").isVisible());
+
+    await page.fill("#paste", "물건 설명: 오래된 물건 하나를 매각합니다. 자세한 내용은 현장 확인 바랍니다.");
+    await page.getByRole("button", { name: "분석하기" }).click();
+    await page.getByText("어떤 종류에 가까운지 골라 주세요").waitFor();
+    await page.getByRole("button", { name: "차량" }).click();
+    await page.getByText("③ 이 물건에서 꼭 확인할 점").waitFor();
+    assert.ok((await page.locator("main li").first().innerText()).includes("이전등록"));
+
+    // 같은 화면에서 다른 후보로 바꾸기
+    await page.getByRole("button", { name: /^농지/ }).click();
+    await page.locator("main li").filter({ hasText: "농지취득자격증명" }).first().waitFor();
+    assert.equal(await page.getByRole("button", { name: /^농지/ }).getAttribute("aria-pressed"), "true");
+  } finally {
+    await browser.close();
+  }
+});
+
+test("서버 응답이 15초 넘게 없으면 오래 걸린다는 안내가 나와요", { skip, timeout: 60000 }, async () => {
+  const { chromium } = createRequire(import.meta.url)("playwright");
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 390, height: 900 } });
+  try {
+    await page.route("**/api/analyze", () => {}); // 답을 주지 않고 붙잡아 둬요
+    await page.goto(BASE + "/");
+    await page.fill("#paste", SAMPLES[0].text);
+    await page.getByRole("button", { name: "분석하기" }).click();
+    await page.getByRole("alert").filter({ hasText: "시간이 너무 오래 걸려요" }).waitFor({ timeout: 20000 });
+    assert.equal(await page.getByRole("button", { name: "분석하기" }).isEnabled(), true);
+  } finally {
+    await browser.close();
+  }
+});

@@ -39,7 +39,7 @@ BASE_URL=http://localhost:3300 node --test tests/api.test.mjs tests/ui.test.mjs
 운영 모드 시험 (검토 전 항목이 운영에서 안 나가는지): 먼저 `npm run build` 후 운영 모드 서버를 따로 띄워요.
 
 ```bash
-SHOW_UNREVIEWED=1 AI_STUB=1 npm run start -- -p 3301
+SHOW_UNREVIEWED=1 npm run start -- -p 3301
 ```
 
 ```bash

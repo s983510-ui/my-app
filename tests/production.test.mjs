@@ -2,7 +2,7 @@
 // 시험용 서버(ui·api 시험)는 SHOW_UNREVIEWED=1로 돌아서 이걸 못 봐요. 그래서 운영과 같은 모드로 따로 띄워요.
 // 실행 순서:
 //   1) npm run build
-//   2) SHOW_UNREVIEWED=1 AI_STUB=1 npm run start -- -p 3301    (일부러 시험용 스위치를 켜 둬요. 운영 모드라 무시돼야 해요)
+//   2) SHOW_UNREVIEWED=1 npm run start -- -p 3301    (일부러 시험용 스위치를 켜 둬요. 운영 모드라 무시돼야 해요)
 //   3) PROD_URL=http://localhost:3301 node --test tests/production.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -45,7 +45,7 @@ test("운영 모드: 검토 전 항목 id는 응답 어디에도 없어요", { s
   }
 });
 
-test("운영 모드: 시험용 AI 흉내(AI_STUB)는 막혀서 CONFIG 오류가 나요", { skip }, async () => {
+test("운영 모드: OpenAI 키가 없으면 CONFIG 오류가 나요", { skip }, async () => {
   const res = await fetch(`${BASE}/api/analyze`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-forwarded-for": `10.20.1.${++seq}` },
@@ -54,4 +54,34 @@ test("운영 모드: 시험용 AI 흉내(AI_STUB)는 막혀서 CONFIG 오류가 
   const body = await res.json();
   assert.equal(res.status, 500);
   assert.equal(body.error.code, "CONFIG");
+});
+
+// 시험용 AI 흉내(AI_STUB)가 운영에서 켜져 있으면 서버가 정상으로 일하지 못해야 해요 (DESIGN §8).
+// Next.js는 시작 점검(instrumentation.ts)에서 오류가 나면 프로그램은 떠 있어도 모든 요청에 500 오류를 줘요.
+test("운영 모드: AI_STUB=1이면 서버가 요청을 받지 않아요", { skip: !process.env.CHECK_START && "CHECK_START=1일 때만 해요 (빌드 필요)", timeout: 60000 }, async () => {
+  const { spawn } = await import("node:child_process");
+  const child = spawn("npx", ["next", "start", "-p", "3302"], { env: { ...process.env, AI_STUB: "1" }, detached: true });
+  try {
+    let status = 0;
+    for (let i = 0; i < 30 && status === 0; i++) {
+      await new Promise((r) => setTimeout(r, 1000));
+      try {
+        const res = await fetch("http://localhost:3302/api/cautions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ categoryId: "farmland" }),
+        });
+        status = res.status;
+      } catch {
+        status = 0; // 아직 안 떴어요
+      }
+    }
+    assert.ok(status >= 500, `서버가 정상으로 답했어요 (상태 ${status})`);
+  } finally {
+    try {
+      process.kill(-child.pid);
+    } catch {
+      child.kill();
+    }
+  }
 });

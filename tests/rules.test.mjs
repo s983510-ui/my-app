@@ -11,6 +11,7 @@ const shouldMask = [
   "900101-1234567", "900101 1234567", "9001011234567",
   "010-1234-5678", "010 1234 5678", "01012345678", "010.1234.5678", "011-123-4567",
   "02-123-4567", "055 123 4567", "031-1234-5678",
+  "070-1234-5678", "080-123-4567", "0505-123-4567", "1588-1234",
 ];
 for (const v of shouldMask) {
   test(`개인정보 "${v}"는 지워요`, () => {
@@ -19,7 +20,7 @@ for (const v of shouldMask) {
     assert.equal(r.text, `문의: ${MASK_TOKEN} 로 연락`);
   });
 }
-const shouldKeep = ["1,234㎡", "12,340,000원", "123-4", "산 12-3", "2026-11-01", "2026-0101-001234", "제8조", "1,000,000,000원"];
+const shouldKeep = ["1,234㎡", "12,340,000원", "123-4", "산 12-3", "2026-11-01", "2026-0101-001234", "제8조", "1,000,000,000원", "1,588 1234", "2026 1500"];
 for (const v of shouldKeep) {
   test(`"${v}"는 지우지 않아요`, () => {
     const r = maskPersonalInfo(`정보: ${v}`);
@@ -69,7 +70,7 @@ test("사이트 전체 하루 500번을 넘으면 막고, 한국 날짜가 바�
 
 test("접속자 주소는 x-forwarded-for의 첫 번째 값을 써요", () => {
   assert.equal(clientIp(new Headers({ "x-forwarded-for": "3.3.3.3, 4.4.4.4" })), "3.3.3.3");
-  assert.equal(clientIp(new Headers({ "x-real-ip": "5.5.5.5" })), "5.5.5.5");
+  assert.equal(clientIp(new Headers({ "x-real-ip": "5.5.5.5" })), "unknown", "x-real-ip는 쓰지 않아요 (DESIGN §6.2)");
   assert.equal(clientIp(new Headers()), "unknown");
 });
 
@@ -142,7 +143,7 @@ test("표 확인일은 보이는 항목 중 가장 오래된 날이에요", () =
 });
 
 // ── 작업 9·10: AI 결과 검사, 종류 확정·후보 ──
-import { sanitizeExtraction, decideCategory, pickCandidates, emptyProperty } from "../lib/categorize.ts";
+import { sanitizeExtraction, decideCategory, pickCandidates, emptyProperty, readConfidence } from "../lib/categorize.ts";
 import { isInSource } from "../lib/match.ts";
 import { stubExtract, AiError } from "../lib/ai.ts";
 
@@ -161,7 +162,7 @@ test("AI가 원문에 없는 값을 넣으면 비우고, 목록 밖 지목·종�
     {
       property: { 소재지: "경상남도 창녕군 다른면 999", 지목: "답", 면적: "1234㎡", 용도지역: "농림지역", 엉뚱한칸: "x" },
       category: "apartment",
-      confidence: 3,
+      confidence: 150,
       clues: ["답", "지어낸단서"],
       candidates: ["farmland", "farmland", "nope", "land"],
     },
@@ -173,7 +174,7 @@ test("AI가 원문에 없는 값을 넣으면 비우고, 목록 밖 지목·종�
   assert.equal(ex.property["용도지역"], null);
   assert.ok(!("엉뚱한칸" in ex.property));
   assert.equal(ex.category, null, "목록 밖 종류는 버려요");
-  assert.equal(ex.confidence, 1, "확신도는 0~1로 잘라요");
+  assert.equal(ex.confidence, 0, "범위 밖(100 초과) 확신도는 0으로 봐요");
   assert.deepEqual(ex.clues, ["답"], "원문에 없는 단서는 빼요");
   assert.deepEqual(ex.candidates, ["farmland", "land"]);
 });
@@ -200,8 +201,21 @@ test("확신도 0.9라도 원문에 있는 단서가 없으면 후보로 보내�
   const ex = sanitizeExtraction({ category: "farmland", confidence: 0.9, clues: ["지어낸단서"] }, src);
   const d = decideCategory(ex, src);
   assert.equal(d.category, null);
-  assert.equal(d.candidates[0], "farmland");
-  assert.ok(d.candidates.length >= 2 && d.candidates.length <= 3);
+  assert.equal(d.candidates[0], "farmland", "AI가 짚은 종류는 맨 앞");
+  assert.equal(d.candidates.length, 8, "원문에 맞는 단서가 하나도 없으면 8개 전체");
+});
+
+test("확신도 읽기: 퍼센트·글자 숫자는 0~1로 바꾸고, 이상한 값은 0이에요", () => {
+  assert.equal(readConfidence(0.9), 0.9);
+  assert.equal(readConfidence(85), 0.85);
+  assert.equal(readConfidence("0.9"), 0.9);
+  assert.equal(readConfidence("85"), 0.85);
+  assert.equal(readConfidence(1), 1);
+  assert.equal(readConfidence(-1), 0);
+  assert.equal(readConfidence(101), 0);
+  assert.equal(readConfidence("높음"), 0);
+  assert.equal(readConfidence(""), 0);
+  assert.equal(readConfidence(null), 0);
 });
 
 test("확신도 0.6이면 후보 2~3개로 보내요", () => {

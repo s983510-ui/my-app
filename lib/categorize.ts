@@ -33,6 +33,16 @@ export function emptyProperty(): PropertyInfo {
   return p;
 }
 
+/**
+ * 확신도를 0~1 숫자로 읽어요. AI가 "0.9"처럼 글자로 주면 숫자로 바꾸고,
+ * 85처럼 퍼센트(1 초과 100 이하)로 주면 100으로 나눠요. 읽을 수 없거나 범위 밖이면 0이에요.
+ */
+export function readConfidence(value: unknown): number {
+  const n = typeof value === "string" && value.trim() !== "" ? Number(value) : value;
+  if (typeof n !== "number" || !Number.isFinite(n) || n < 0 || n > 100) return 0;
+  return n > 1 ? n / 100 : n;
+}
+
 /** AI ① 결과(모양을 믿을 수 없는 값)를 원문과 대조해 깨끗하게 만들어요. */
 export function sanitizeExtraction(raw: unknown, source: string): Extraction {
   const obj = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
@@ -50,10 +60,7 @@ export function sanitizeExtraction(raw: unknown, source: string): Extraction {
   }
 
   const category = isCategoryId(obj.category) ? obj.category : null;
-  const confidence =
-    typeof obj.confidence === "number" && Number.isFinite(obj.confidence)
-      ? Math.min(1, Math.max(0, obj.confidence))
-      : 0;
+  const confidence = readConfidence(obj.confidence);
   const clues = Array.isArray(obj.clues)
     ? obj.clues.filter((c): c is string => typeof c === "string" && isInSource(c, source)).slice(0, 10)
     : [];
@@ -95,8 +102,14 @@ export function pickCandidates(source: string, property: PropertyInfo, first: Ca
   const add = (id: CategoryId) => {
     if (list.length < 3 && list.indexOf(id) === -1) list.push(id);
   };
-  first.forEach(add);
   const ranked = scoreByClues(source, property);
+  // 판정 단서가 원문에 하나도 안 맞으면 어느 쪽도 믿기 어려워서 8개 전체를 보여줘요 (DESIGN §4.2 6단계).
+  // AI가 짚은 종류는 맨 앞에 두어 찾기 쉽게 해요.
+  if (ranked.length === 0) {
+    const head = first.filter((id, i) => first.indexOf(id) === i);
+    return [...head, ...CATEGORY_IDS.filter((id) => head.indexOf(id) === -1)];
+  }
+  first.forEach(add);
   ranked.forEach((r) => add(r.id));
   if (list.length === 0) return [...CATEGORY_IDS];
   if (list.length === 1) {

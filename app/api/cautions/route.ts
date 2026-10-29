@@ -10,6 +10,9 @@ import { errorResponse, readJsonLimited } from "@/lib/api.ts";
 
 const VALUE_MAX = 100;
 
+// 서버가 10초 안에 끝내도록 알려요 (AI 6초 제한 + 여유, DESIGN §7).
+export const maxDuration = 10;
+
 export async function POST(request: Request) {
   if (!takeRequest(clientIp(request.headers)).ok) return errorResponse("RATE_LIMITED");
 

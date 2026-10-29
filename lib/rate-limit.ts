@@ -35,7 +35,7 @@ export function clientIp(headers: Headers): string {
     const first = forwarded.split(",")[0].trim();
     if (first) return first;
   }
-  return headers.get("x-real-ip")?.trim() || "unknown";
+  return "unknown";
 }
 
 /** 요청 하나를 세고, 허용되는지 알려줘요. 두 서버 API가 같은 함수를 써서 횟수를 공유해요. */
