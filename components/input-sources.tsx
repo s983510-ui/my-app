@@ -67,6 +67,7 @@ export default function InputSources({ onText, disabled }: Props) {
   const [working, setWorking] = useState<"image" | "link" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [agreed, setAgreed] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
   function done(r: { ok: true; data: Loaded } | { ok: false; message: string }, what: string) {
@@ -95,7 +96,7 @@ export default function InputSources({ onText, disabled }: Props) {
       setError("사진을 열 수 없어요. jpg·png 사진을 다시 올려 주세요.");
       return;
     }
-    done(await post("/api/ocr", { image: dataUrl }), "사진");
+    done(await post("/api/ocr", { image: dataUrl, consent: true }), "사진");
     if (fileInput.current) fileInput.current.value = "";
   }
 
@@ -111,21 +112,35 @@ export default function InputSources({ onText, disabled }: Props) {
   return (
     <div className="mt-3 flex flex-col gap-3">
       <div>
-        <label className={`${button} inline-block cursor-pointer`}>
+        <label className="flex items-start gap-2 rounded-lg bg-card px-3 py-2 text-sm leading-6 text-ink">
+          <input
+            type="checkbox"
+            checked={agreed}
+            onChange={(e) => setAgreed(e.target.checked)}
+            disabled={working !== null}
+            className="mt-1 h-5 w-5 shrink-0 accent-blue"
+          />
+          <span>
+            사진 속 글자(이름·주소·연락처 등 <b>개인정보가 보이면 그대로</b>)를 읽기 위해 사진을 외부 AI(OpenAI)에 전달하는 것에 동의해요.
+            <span className="block text-xs text-muted">전달하기 전에는 가릴 수 없으니, 개인정보는 가리고 올려 주세요. 사진은 저장하지 않아요.</span>
+          </span>
+        </label>
+        <label
+          className={`${button} mt-2 inline-block ${agreed && !busy ? "cursor-pointer" : "cursor-not-allowed text-muted"}`}
+          aria-disabled={!agreed || busy}
+        >
           {working === "image" ? "사진 읽는 중… (최대 30초)" : "📷 사진·캡처 올리기"}
           <input
             ref={fileInput}
             type="file"
             accept="image/*"
-            disabled={busy}
+            disabled={busy || !agreed}
             onChange={(e) => onFile(e.target.files?.[0])}
             className="sr-only"
             aria-label="사진 또는 캡처 올리기"
           />
         </label>
-        <p className="mt-1 text-xs leading-5 text-muted">
-          사진 속 글자를 읽기 위해 사진을 외부 AI(OpenAI)에 전달해요. 이름·연락처·주민등록번호가 보이면 가리고 올려 주세요.
-        </p>
+        {!agreed && <p className="mt-1 text-xs leading-5 text-muted">위 동의에 체크하면 사진을 올릴 수 있어요.</p>}
       </div>
       <div>
         <div className="flex gap-2">
