@@ -8,6 +8,7 @@ export type ErrorCode =
   | "TABLE_INCOMPLETE"
   | "CONFIG"
   | "BAD_REQUEST"
+  | "CONSENT_REQUIRED"
   | "IMAGE_INVALID"
   | "OCR_FAILED"
   | "LINK_INVALID"
@@ -20,6 +21,7 @@ export const MESSAGES: Record<ErrorCode, string> = {
   TABLE_INCOMPLETE: "안내를 준비하지 못했어요. 잠시 후 다시 시도해 주세요",
   CONFIG: "서버 설정이 필요해요",
   BAD_REQUEST: "요청 형식이 올바르지 않아요",
+  CONSENT_REQUIRED: "사진이 외부 AI(OpenAI)로 전달되는 것에 동의해 주세요",
   IMAGE_INVALID: "사진을 읽을 수 없어요. jpg·png 사진을 다시 올려 주세요",
   OCR_FAILED: "사진에서 글자를 읽지 못했어요. 더 선명한 사진으로 다시 올리거나 글을 붙여넣어 주세요",
   LINK_INVALID: "온비드(onbid.co.kr) 링크만 불러올 수 있어요",
@@ -33,6 +35,7 @@ const STATUS: Record<ErrorCode, number> = {
   TABLE_INCOMPLETE: 500,
   CONFIG: 500,
   BAD_REQUEST: 400,
+  CONSENT_REQUIRED: 400,
   IMAGE_INVALID: 400,
   OCR_FAILED: 502,
   LINK_INVALID: 400,

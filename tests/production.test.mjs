@@ -64,7 +64,7 @@ test("운영 모드: 사진 읽기는 키가 없으면 CONFIG, 링크는 온비�
   const PNG = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
   const post = (path, body) =>
     fetch(`${BASE}${path}`, { method: "POST", headers: { "Content-Type": "application/json", "x-forwarded-for": `10.20.2.${++seq}` }, body: JSON.stringify(body) });
-  const ocr = await post("/api/ocr", { image: PNG });
+  const ocr = await post("/api/ocr", { image: PNG, consent: true });
   assert.equal(ocr.status, 500);
   assert.equal((await ocr.json()).error.code, "CONFIG");
   const link = await post("/api/fetch-link", { url: "https://169.254.169.254/latest/meta-data/" });

@@ -228,8 +228,13 @@ test("사진을 올리면 읽은 글이 붙여넣기 칸에 들어가요 (개인
   page.on("pageerror", (e) => errors.push(e.message));
   try {
     await page.goto(BASE + "/");
-    assert.ok(await page.getByText("사진을 외부 AI(OpenAI)에 전달해요").isVisible());
+    assert.ok(await page.getByText("사진을 외부 AI(OpenAI)에 전달하는 것에 동의해요").isVisible());
     const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64");
+    // 동의에 체크하기 전에는 사진을 올릴 수 없어요
+    assert.equal(await page.locator('input[type="file"]').isDisabled(), true);
+    assert.ok(await page.getByText("위 동의에 체크하면 사진을 올릴 수 있어요").isVisible());
+    await page.getByRole("checkbox", { name: /개인정보가 보이면 그대로/ }).check();
+    assert.equal(await page.locator('input[type="file"]').isDisabled(), false);
     await page.setInputFiles('input[type="file"]', { name: "capture.png", mimeType: "image/png", buffer: png });
     await page.getByText("사진에서 읽은 글을 아래 칸에 넣었어요").waitFor({ timeout: 15000 });
     const value = await page.inputValue("#paste");
@@ -251,6 +256,7 @@ test("사진이 아닌 파일이나 허용되지 않은 링크는 안내가 나�
   const page = await browser.newPage({ viewport: { width: 390, height: 900 } });
   try {
     await page.goto(BASE + "/");
+    await page.getByRole("checkbox", { name: /개인정보가 보이면 그대로/ }).check();
     await page.setInputFiles('input[type="file"]', { name: "a.png", mimeType: "image/png", buffer: Buffer.from("사진이 아니에요") });
     await page.getByRole("alert").filter({ hasText: "사진을 열 수 없어요" }).waitFor({ timeout: 10000 });
 

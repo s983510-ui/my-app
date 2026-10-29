@@ -15,7 +15,10 @@ export async function POST(request: Request) {
 
   const read = await readJsonLimited(request, IMAGE_BODY_MAX_BYTES);
   if (!read.ok) return errorResponse(read.reason === "TOO_LARGE" ? "IMAGE_INVALID" : "BAD_REQUEST");
-  const image = (read.body as { image?: unknown } | null)?.image;
+  const body = read.body as { image?: unknown; consent?: unknown } | null;
+  // 사진 속 이름·주소 같은 개인정보는 글로 읽기 전에는 지울 수 없어서, 사용자가 전달에 동의했을 때만 AI로 보내요 (PRD 7번).
+  if (body?.consent !== true) return errorResponse("CONSENT_REQUIRED");
+  const image = body.image;
   if (!checkImageDataUrl(image).ok) return errorResponse("IMAGE_INVALID");
 
   let raw: string;
