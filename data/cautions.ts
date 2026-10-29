@@ -298,8 +298,8 @@ export const CAUTIONS: CautionItem[] = [
     onSiteStatus: "confirmed",
     agency: "시·군·구청 건축 담당 부서",
     sources: [law("건축법", "제79조"), law("건축법", "제80조"), EAIS],
-    status: "needs-check",
-    checkedAt: DRAFT_DATE,
+    status: "confirmed",
+    checkedAt: "2026-10-29",
   },
 
   // ───────── 건물(비주거) ─────────
