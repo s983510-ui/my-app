@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports -- 낮은 버전 Node에서 돌려야 해서 require를 써요 */
 // 낮은 버전의 Node(12 이상)에서도 도는 평가 스크립트예요. eval.mjs와 같은 기준으로 재요.
 // 실행: node scripts/eval-simple.js https://<미리보기-주소>
 // 데이터는 scripts/eval-data.json 에서 읽어요(만드는 법: scripts/make-eval-data.mjs).
