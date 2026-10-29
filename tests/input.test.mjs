@@ -105,3 +105,58 @@ test("링크 읽기: 전체 제한(12초)이 서버 제한(maxDuration)보다 �
   const max = await maxDurationOfFetchLinkRoute();
   assert.ok(LINK_TOTAL_MS / 1000 < max, `전체 ${LINK_TOTAL_MS / 1000}초는 maxDuration ${max}초보다 짧아야 해요`);
 });
+
+// ── 링크를 읽지 못한 이유별 안내 ──
+import { linkFailMessage, looksLikeBareOnbidLink } from "../lib/input-source.ts";
+
+test("링크 실패 안내: 이유마다 다른 문구이고, 사진·붙여넣기 같은 다음 방법을 알려줘요", () => {
+  const reasons = ["BLOCKED", "NOT_FOUND", "SERVER", "TIMEOUT", "REDIRECT", "NOT_TEXT", "EMPTY", "NETWORK"];
+  const seen = new Set();
+  for (const r of reasons) {
+    const m = linkFailMessage(r);
+    assert.ok(m.length > 10, r);
+    seen.add(m);
+  }
+  assert.equal(seen.size, reasons.length, "이유마다 문구가 달라야 해요");
+  for (const r of ["EMPTY", "BLOCKED", "SERVER", "TIMEOUT", "NETWORK"]) assert.ok(linkFailMessage(r).includes("사진을 올리거나"), r);
+  for (const r of ["NOT_FOUND", "REDIRECT", "NOT_TEXT"]) assert.ok(linkFailMessage(r).includes("주소"), r);
+});
+
+test("물건 번호가 없는 온비드 주소는 미리 알아봐요", () => {
+  assert.equal(looksLikeBareOnbidLink("https://www.onbid.co.kr/op/cltrpbancinf/cltrdtl/CltrDtlController/mvmnCltrDtl.do"), true);
+  assert.equal(looksLikeBareOnbidLink("https://www.onbid.co.kr/op/x.do?cltrNo=123&cltrHistNo=45"), false);
+  assert.equal(looksLikeBareOnbidLink("https://evil.com/a"), false, "온비드가 아니면 여기서 판단하지 않아요");
+  assert.equal(looksLikeBareOnbidLink("그냥 글"), false);
+});
+
+test("링크 읽기 실패 이유: 서버 응답에 따라 BLOCKED·NOT_FOUND·SERVER·NOT_TEXT·REDIRECT로 나눠요", async () => {
+  const cases = [
+    { status: 403, headers: {}, reason: "BLOCKED" },
+    { status: 404, headers: {}, reason: "NOT_FOUND" },
+    { status: 500, headers: {}, reason: "SERVER" },
+    { status: 200, headers: { "Content-Type": "application/pdf" }, reason: "NOT_TEXT" },
+    { status: 302, headers: { Location: "http://127.0.0.1:1/x" }, reason: "REDIRECT" },
+  ];
+  for (const c of cases) {
+    const { server, url } = await listen((req, res) => {
+      res.writeHead(c.status, c.headers);
+      res.end("x");
+    });
+    try {
+      await assert.rejects(fetchLinkText(url, { hopMs: 1000, totalMs: 2000 }), (e) => e instanceof LinkError && e.reason === c.reason, `${c.status} → ${c.reason}`);
+    } finally {
+      server.close();
+    }
+  }
+});
+
+test("링크 읽기 실패 이유: 답이 없으면 TIMEOUT, 연결이 안 되면 NETWORK", async () => {
+  const slow = await listen(() => {});
+  try {
+    await assert.rejects(fetchLinkText(slow.url, { hopMs: 200, totalMs: 400 }), (e) => e instanceof LinkError && e.reason === "TIMEOUT");
+  } finally {
+    slow.server.closeAllConnections();
+    slow.server.close();
+  }
+  await assert.rejects(fetchLinkText(new URL("http://127.0.0.1:1/"), { hopMs: 500, totalMs: 800 }), (e) => e instanceof LinkError && e.reason === "NETWORK");
+});

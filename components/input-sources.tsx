@@ -3,6 +3,7 @@
 // 읽어 온 글은 붙여넣기 칸에 넣어 주고, 사용자가 확인·수정한 뒤 [분석하기]를 눌러요.
 import { useRef, useState } from "react";
 import type { ErrorResponse } from "@/lib/view-types.ts";
+import { looksLikeBareOnbidLink } from "@/lib/input-source.ts";
 
 type Props = { onText: (text: string) => void; disabled: boolean };
 type Loaded = { text: string; masked: boolean };
@@ -68,10 +69,12 @@ export default function InputSources({ onText, disabled }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [agreed, setAgreed] = useState(false);
+  const [linkFailed, setLinkFailed] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
   function done(r: { ok: true; data: Loaded } | { ok: false; message: string }, what: string) {
     setWorking(null);
+    setLinkFailed(what === "링크" && !r.ok);
     if (!r.ok) {
       setError(r.message);
       return;
@@ -105,6 +108,13 @@ export default function InputSources({ onText, disabled }: Props) {
   async function onLink() {
     setError(null);
     setNotice(null);
+    setLinkFailed(false);
+    // 물건 번호가 없는 주소는 온비드가 빈 화면을 줘서 읽을 글이 없어요. 서버에 묻지 않고 바로 알려요.
+    if (looksLikeBareOnbidLink(link)) {
+      setLinkFailed(true);
+      setError("물건 번호가 빠진 주소 같아요. 물건 하나를 열어서 주소창의 전체 주소를 복사해 넣어 주세요.");
+      return;
+    }
     setWorking("link");
     done(await post("/api/fetch-link", { url: link }), "링크");
   }
@@ -167,6 +177,16 @@ export default function InputSources({ onText, disabled }: Props) {
         <p role="alert" className="rounded-lg border border-error-text bg-error-bg px-3 py-2 text-sm text-error-text">
           {error}
         </p>
+      )}
+      {linkFailed && (
+        <div className="rounded-lg bg-card px-3 py-2 text-sm leading-6 text-ink">
+          <p className="font-semibold text-navy">링크가 안 읽힐 때는 이렇게 해 보세요</p>
+          <ol className="ml-5 list-decimal">
+            <li>온비드에서 물건 하나를 열고, 주소창의 <b>전체 주소</b>를 복사해 넣어요. 뒤에 <code>?cltrNo=…</code>처럼 물건 번호가 붙어 있어야 해요.</li>
+            <li>그래도 안 되면 <b>📷 사진·캡처 올리기</b>가 가장 잘 돼요.</li>
+            <li>글을 복사해서 아래 칸에 붙여넣어도 돼요.</li>
+          </ol>
+        </div>
       )}
       {notice && <p className="rounded-lg bg-card px-3 py-2 text-sm leading-6 text-good">{notice}</p>}
     </div>

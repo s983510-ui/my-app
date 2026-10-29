@@ -3,7 +3,7 @@
 import { clientIp, takeLightRequest, TEXT_MAX } from "@/lib/rate-limit.ts";
 import { maskPersonalInfo } from "@/lib/mask.ts";
 import { LinkError, fetchLinkText } from "@/lib/fetch-link.ts";
-import { parseAllowedLink } from "@/lib/input-source.ts";
+import { linkFailMessage, parseAllowedLink } from "@/lib/input-source.ts";
 import { errorResponse, readJsonLimited } from "@/lib/api.ts";
 
 export const maxDuration = 15;
@@ -20,11 +20,11 @@ export async function POST(request: Request) {
   try {
     raw = await fetchLinkText(url);
   } catch (e) {
-    if (e instanceof LinkError) return errorResponse("LINK_FAILED");
+    if (e instanceof LinkError) return errorResponse("LINK_FAILED", linkFailMessage(e.reason));
     throw e;
   }
   const trimmed = raw.trim().slice(0, TEXT_MAX);
-  if (trimmed.length < 20) return errorResponse("LINK_FAILED");
+  if (trimmed.length < 20) return errorResponse("LINK_FAILED", linkFailMessage("EMPTY"));
   const { text, masked } = maskPersonalInfo(trimmed);
   return Response.json({ text, masked });
 }

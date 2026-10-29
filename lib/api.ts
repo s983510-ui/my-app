@@ -43,9 +43,9 @@ const STATUS: Record<ErrorCode, number> = {
 };
 
 /** 오류 응답을 만들어요. 서버 기록에는 붙여넣은 글 없이 오류 코드만 남겨요(DESIGN §8). */
-export function errorResponse(code: ErrorCode): Response {
+export function errorResponse(code: ErrorCode, message?: string): Response {
   if (STATUS[code] >= 500) console.error(`[auction-caution] ${code}`);
-  return Response.json({ error: { code, message: MESSAGES[code] } }, { status: STATUS[code] });
+  return Response.json({ error: { code, message: message ?? MESSAGES[code] } }, { status: STATUS[code] });
 }
 
 /** 한 번에 받는 요청 본문의 최대 크기(바이트). 한글 10,000자는 30,000바이트라서 여유를 둬요(DESIGN §8). */
