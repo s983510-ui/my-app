@@ -1,0 +1,56 @@
+# 실제 AI로 샘플 20건의 성공 기준 5개를 재는 평가예요 (PLAN 작업 17).
+# 사용법: GitHub 저장소 → Actions 탭 → "AI 평가" → Run workflow → 주소 입력 (예: https://kaminu2.vercel.app)
+# OpenAI 키는 이 파일에서 쓰지 않아요. 입력한 주소의 서버가 자기 키로 AI를 불러요.
+name: AI 평가
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "평가할 사이트 주소 (https://로 시작, 끝에 / 없이)"
+        required: true
+        default: "https://kaminu2.vercel.app"
+
+permissions:
+  contents: read
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: 주소 확인
+        env:
+          TARGET_URL: ${{ inputs.url }}
+        run: |
+          case "$TARGET_URL" in
+            https://*) echo "평가 주소: $TARGET_URL" ;;
+            *) echo "주소는 https://로 시작해야 해요" >&2; exit 2 ;;
+          esac
+      - name: 샘플 20건 평가 (13초 간격, 약 5분)
+        env:
+          TARGET_URL: ${{ inputs.url }}
+        run: |
+          set +e
+          node scripts/eval-simple.js "$TARGET_URL" | tee eval-output.txt
+          code=${PIPESTATUS[0]}
+          {
+            echo '## AI 평가 결과'
+            echo '```'
+            cat eval-output.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit $code
+      - name: 기록 파일 올리기
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-result
+          path: |
+            eval-output.txt
+            test-results/eval-*.json
+          if-no-files-found: ignore
