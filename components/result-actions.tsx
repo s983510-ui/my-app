@@ -15,6 +15,14 @@ function toText(category: NamedCategory, cautions: CautionViewData[], checkedAt:
     lines.push(`   근거: ${c.sources.map((s) => `${s.label} ${s.url}`).join(", ")}`);
     lines.push(`   확인일: ${c.checkedAt}`);
   });
+  const field = cautions.filter((c) => c.onSite.length > 0);
+  if (field.length > 0) {
+    lines.push("", "[현장에서 볼 점]");
+    field.forEach((c) => {
+      lines.push(`- ${c.title}`);
+      c.onSite.forEach((l) => lines.push(`  □ ${l}`));
+    });
+  }
   return lines.join("\n");
 }
 

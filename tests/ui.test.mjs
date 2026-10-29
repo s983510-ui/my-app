@@ -51,6 +51,8 @@ for (const c of cases) {
       assert.ok(await firstItem.getByText("해당 가능성 높음").isVisible());
       assert.ok((await firstItem.locator("a[href^='https://']").count()) >= 1);
       assert.ok(await firstItem.getByText(/확인일: \d{4}-\d{2}-\d{2}/).isVisible());
+      // 현장에서 볼 점 (시험 서버는 검토 전 문장도 보여줘요)
+      assert.ok(await page.getByText("④ 현장에서 볼 점").isVisible());
       for (const label of ["결과 복사", "인쇄", "처음부터 다시"]) assert.ok(await page.getByRole("button", { name: label }).isVisible());
       await page.screenshot({ path: `${OUT}ui-${c.name}-result.png`, fullPage: true });
 

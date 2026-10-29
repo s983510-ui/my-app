@@ -75,3 +75,14 @@ test("표에 같은 id가 두 번 있으면 알려줘요", () => {
 test("지금 주의사항 표(data/cautions.ts)는 형식을 모두 지켜요", () => {
   assert.deepEqual(checkCautionTable(CAUTIONS), []);
 });
+
+test("현장에서 볼 점(onSite): 80자 이내 문장이고 검토 상태가 있어야 해요", () => {
+  const base = {
+    id: "vehicle-99", category: "vehicle", title: "t", text: "t", plain: "p", required: false, highlightWhen: null,
+    steps: ["a"], agency: "기관", sources: [{ label: "출처", url: "https://example.com" }], status: "needs-check", checkedAt: "2026-10-29",
+  };
+  assert.deepEqual(checkCautionTable([{ ...base, onSite: ["차대번호를 봐요"], onSiteStatus: "needs-check" }]), []);
+  assert.ok(checkCautionTable([{ ...base, onSite: ["차대번호를 봐요"] }]).length > 0, "검토 상태가 없으면 걸러요");
+  assert.ok(checkCautionTable([{ ...base, onSite: [""], onSiteStatus: "confirmed" }]).length > 0, "빈 문장은 걸러요");
+  assert.ok(checkCautionTable([{ ...base, onSite: ["가".repeat(81)], onSiteStatus: "confirmed" }]).length > 0, "너무 긴 문장은 걸러요");
+});

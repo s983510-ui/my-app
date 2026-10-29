@@ -9,6 +9,8 @@ export type CautionViewData = {
   required: boolean;
   highlight: boolean;
   steps: string[];
+  /** 현장에서 볼 점 (검토 전이면 빈 목록) */
+  onSite: string[];
   agency: string;
   sources: { label: string; url: string }[];
   checkedAt: string;

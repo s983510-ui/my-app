@@ -61,6 +61,7 @@ export function cautionsFor(
       required: item.required,
       highlight: isHighlighted(item, property),
       steps: item.steps,
+      onSite: item.onSite && (item.onSiteStatus === "confirmed" || includeUnreviewed) ? item.onSite : [],
       agency: item.agency,
       sources: item.sources,
       checkedAt: item.checkedAt,

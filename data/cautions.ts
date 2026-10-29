@@ -259,6 +259,11 @@ export const CAUTIONS: CautionItem[] = [
     required: true,
     highlightWhen: null,
     steps: ["현장에서 실제로 누가 살고 있는지 확인해요", "공고문의 점유 관계와 명도 책임 안내를 확인해요"],
+    onSite: [
+      "현관·우편함·계량기 상태로 실제 사는 사람이 있는지 봐요",
+      "점유자가 있다면 공고문의 점유 관계와 같은지 맞춰 봐요",
+    ],
+    onSiteStatus: "needs-check",
     agency: "한국자산관리공사(온비드 공고 담당)",
     sources: [ONBID],
     status: "confirmed",
@@ -287,6 +292,10 @@ export const CAUTIONS: CautionItem[] = [
     required: false,
     highlightWhen: null,
     steps: ["세움터 또는 정부24에서 건축물대장을 열람해요", "위반건축물 표시가 있으면 시·군·구청 건축 담당 부서에 내용을 문의해요"],
+    onSite: [
+      "건축물대장에 없는 증축·칸막이가 있는지 봐요",
+    ],
+    onSiteStatus: "needs-check",
     agency: "시·군·구청 건축 담당 부서",
     sources: [law("건축법", "제79조"), law("건축법", "제80조"), EAIS],
     status: "needs-check",
@@ -415,6 +424,12 @@ export const CAUTIONS: CautionItem[] = [
     required: false,
     highlightWhen: null,
     steps: ["공고문에서 보관 장소·열람 일정·인도 조건을 확인해요", "현장에서 외관·주행거리·열쇠 유무를 확인해요"],
+    onSite: [
+      "차대번호와 번호판이 공고문과 같은지 맞춰 봐요",
+      "계기판의 주행거리와 경고등을 봐요",
+      "열쇠 개수를 세어 보고, 시동 시험이 허용되면 걸리는지 봐요",
+    ],
+    onSiteStatus: "needs-check",
     agency: "한국자산관리공사(온비드 공고 담당)",
     sources: [ONBID],
     status: "needs-check",
@@ -526,7 +541,7 @@ export const CAUTIONS: CautionItem[] = [
     ],
     agency: "농지 소재지 시·구·읍·면 사무소",
     sources: [law("농지법", "제24조"), ONBID],
-    status: "needs-check",
+    status: "confirmed",
     checkedAt: "2026-10-29",
   },
   {
@@ -542,9 +557,13 @@ export const CAUTIONS: CautionItem[] = [
       "현장에서 논둑·밭둑 등 실제 경작 범위와 비교해요",
       "차이가 있으면 지적측량 가능 여부를 문의해요",
     ],
+    onSite: [
+      "논둑·밭둑·울타리 같은 경계 표시가 지적도 모양과 같은지 봐요",
+    ],
+    onSiteStatus: "needs-check",
     agency: "시·군·구청 토지(지적) 담당 부서",
     sources: [law("공간정보의 구축 및 관리 등에 관한 법률", "제24조"), EUM],
-    status: "needs-check",
+    status: "confirmed",
     checkedAt: "2026-10-29",
   },
   {
@@ -562,7 +581,7 @@ export const CAUTIONS: CautionItem[] = [
     ],
     agency: "시·군·구청 도시계획 담당 부서",
     sources: [law("국토의 계획 및 이용에 관한 법률", "제56조"), EUM],
-    status: "needs-check",
+    status: "confirmed",
     checkedAt: "2026-10-29",
   },
   {
@@ -578,9 +597,13 @@ export const CAUTIONS: CautionItem[] = [
       "현장에서 실제 드나드는 길이 있는지 확인해요",
       "건축 계획이 있으면 시·군·구청 건축 담당 부서에 문의해요",
     ],
+    onSite: [
+      "실제 드나드는 길이 있는지, 그 길이 큰 도로까지 이어지는지 걸어서 봐요",
+    ],
+    onSiteStatus: "needs-check",
     agency: "시·군·구청 건축 담당 부서",
     sources: [law("건축법", "제44조"), EUM],
-    status: "needs-check",
+    status: "confirmed",
     checkedAt: "2026-10-29",
   },
   {
@@ -596,9 +619,13 @@ export const CAUTIONS: CautionItem[] = [
       "저당권이 설정된 때 건물이 이미 있었는지 날짜를 비교해요",
       "공고문의 건물·점유 안내를 확인해요",
     ],
+    onSite: [
+      "땅 위 건물이 누구 것인지, 사람이 쓰고 있는지 봐요",
+    ],
+    onSiteStatus: "needs-check",
     agency: "한국자산관리공사(온비드 공고 담당)",
     sources: [law("민법", "제366조"), IROS],
-    status: "needs-check",
+    status: "confirmed",
     checkedAt: "2026-10-29",
   },
   {
@@ -616,7 +643,7 @@ export const CAUTIONS: CautionItem[] = [
     ],
     agency: "한국자산관리공사(온비드 공고 담당)",
     sources: [law("국세징수법", "제92조"), IROS, ONBID],
-    status: "needs-check",
+    status: "confirmed",
     checkedAt: "2026-10-29",
   },
   {
@@ -633,7 +660,7 @@ export const CAUTIONS: CautionItem[] = [
     ],
     agency: "한국자산관리공사(온비드 공고 담당)",
     sources: [law("주택임대차보호법", "제3조의2"), law("주택임대차보호법", "제8조"), IROS],
-    status: "needs-check",
+    status: "confirmed",
     checkedAt: "2026-10-29",
   },
   {
@@ -651,7 +678,7 @@ export const CAUTIONS: CautionItem[] = [
     ],
     agency: "인터넷등기소(등기부 열람)",
     sources: [law("주택임대차보호법", "제3조의3"), IROS],
-    status: "needs-check",
+    status: "confirmed",
     checkedAt: "2026-10-29",
   },
   {
@@ -667,9 +694,13 @@ export const CAUTIONS: CautionItem[] = [
       "현장에서 실제 쓰임을 비교해요",
       "하려는 영업이 가능한지 시·군·구청 건축 담당 부서에 문의해요",
     ],
+    onSite: [
+      "간판과 실제 영업 모습이 건축물대장의 용도와 같은지 봐요",
+    ],
+    onSiteStatus: "needs-check",
     agency: "시·군·구청 건축 담당 부서",
     sources: [law("건축법", "제19조"), EAIS, GOV24],
-    status: "needs-check",
+    status: "confirmed",
     checkedAt: "2026-10-29",
   },
   {
@@ -685,9 +716,13 @@ export const CAUTIONS: CautionItem[] = [
       "현장에서 소화기·경보기 등 설치 여부를 확인해요",
       "조치명령 이력은 관할 소방서에 문의해요",
     ],
+    onSite: [
+      "소화기·경보기·비상구 표시가 보이는 곳에 있는지 봐요",
+    ],
+    onSiteStatus: "needs-check",
     agency: "관할 소방서",
     sources: [law("소방시설 설치 및 관리에 관한 법률", "제12조")],
-    status: "needs-check",
+    status: "confirmed",
     checkedAt: "2026-10-29",
   },
   {
@@ -704,7 +739,7 @@ export const CAUTIONS: CautionItem[] = [
     ],
     agency: "한국자산관리공사(온비드 공고 담당)",
     sources: [law("상가건물 임대차보호법", "제5조"), law("상가건물 임대차보호법", "제6조"), IROS],
-    status: "needs-check",
+    status: "confirmed",
     checkedAt: "2026-10-29",
   },
   {
@@ -720,6 +755,11 @@ export const CAUTIONS: CautionItem[] = [
       "보험개발원 카히스토리에서 침수·사고 이력을 조회해요",
       "현장 열람이 가능하면 바닥·시트 아래·트렁크 안쪽을 눈으로 확인해요",
     ],
+    onSite: [
+      "바닥 매트 밑·시트 밑·트렁크 안쪽에 물 자국이나 녹이 있는지 봐요",
+      "외관에 색이나 이음새가 다른 곳이 있는지 봐요",
+    ],
+    onSiteStatus: "needs-check",
     agency: "보험개발원",
     sources: [CAR365, { label: "카히스토리 (보험개발원 자동차 이력 조회)", url: "https://www.carhistory.or.kr" }],
     status: "confirmed",
