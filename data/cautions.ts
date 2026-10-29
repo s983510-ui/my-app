@@ -372,8 +372,8 @@ export const CAUTIONS: CautionItem[] = [
     ],
     agency: "차량등록사업소 (시·군·구청)",
     sources: [law("자동차관리법", "제12조"), CAR365],
-    status: "needs-check",
-    checkedAt: DRAFT_DATE,
+    status: "confirmed",
+    checkedAt: "2026-10-29",
   },
   {
     id: "vehicle-02",
@@ -389,8 +389,8 @@ export const CAUTIONS: CautionItem[] = [
     ],
     agency: "보험회사",
     sources: [law("자동차손해배상 보장법", "제5조")],
-    status: "needs-check",
-    checkedAt: DRAFT_DATE,
+    status: "confirmed",
+    checkedAt: "2026-10-29",
   },
   {
     id: "vehicle-03",
