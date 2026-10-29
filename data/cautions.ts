@@ -433,8 +433,8 @@ export const CAUTIONS: CautionItem[] = [
     steps: ["공고문에서 매각 조건(현 상태 인도 여부)을 확인해요", "열람 일정에 맞춰 현장에서 상태를 확인해요"],
     agency: "한국자산관리공사(온비드 공고 담당)",
     sources: [ONBID],
-    status: "needs-check",
-    checkedAt: DRAFT_DATE,
+    status: "confirmed",
+    checkedAt: "2026-10-29",
   },
   {
     id: "machinery-02",
@@ -461,8 +461,8 @@ export const CAUTIONS: CautionItem[] = [
     steps: ["공고문에서 반출 기한·장소·책임을 확인해요", "운반·해체 업체에 비용을 미리 알아봐요"],
     agency: "한국자산관리공사(온비드 공고 담당)",
     sources: [ONBID],
-    status: "needs-check",
-    checkedAt: DRAFT_DATE,
+    status: "confirmed",
+    checkedAt: "2026-10-29",
   },
 
   // ───────── 기타 동산 ─────────
