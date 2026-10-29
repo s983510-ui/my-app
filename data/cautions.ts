@@ -432,8 +432,8 @@ export const CAUTIONS: CautionItem[] = [
     onSiteStatus: "confirmed",
     agency: "한국자산관리공사(온비드 공고 담당)",
     sources: [ONBID],
-    status: "needs-check",
-    checkedAt: DRAFT_DATE,
+    status: "confirmed",
+    checkedAt: "2026-10-29",
   },
 
   // ───────── 기계·장비 ─────────
