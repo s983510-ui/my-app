@@ -6,19 +6,17 @@ import { emptyProperty } from "@/lib/categorize.ts";
 import { PROPERTY_FIELDS } from "@/lib/types.ts";
 import { TableIncompleteError } from "@/lib/cautions.ts";
 import { buildCategoryResult } from "@/lib/result.ts";
-import { errorResponse } from "@/lib/api.ts";
+import { errorResponse, readJsonLimited } from "@/lib/api.ts";
 
 const VALUE_MAX = 100;
 
 export async function POST(request: Request) {
   if (!takeRequest(clientIp(request.headers)).ok) return errorResponse("RATE_LIMITED");
 
-  let body: { categoryId?: unknown; property?: unknown } | null;
-  try {
-    body = await request.json();
-  } catch {
-    return errorResponse("BAD_REQUEST");
-  }
+  // 이 요청은 종류 id와 짧은 물건 정보뿐이라 본문을 작게 받아요.
+  const read = await readJsonLimited(request, 16384);
+  if (!read.ok) return errorResponse("BAD_REQUEST");
+  const body = read.body as { categoryId?: unknown; property?: unknown } | null;
   if (!isCategoryId(body?.categoryId)) return errorResponse("BAD_CATEGORY");
 
   // 물건 정보는 강조 조건 대조에만 써요. 정해진 9칸만, 값은 100자까지 받아요.

@@ -32,6 +32,24 @@ test("JSON이 아니면 400 BAD_REQUEST", { skip }, async () => {
   assert.equal(r.body.error.code, "BAD_REQUEST");
 });
 
+test("본문이 너무 크면(64KB 초과) 읽지 않고 400 TEXT_LENGTH", { skip }, async () => {
+  const r = await post("/api/analyze", { text: "가".repeat(30000) });
+  assert.equal(r.status, 400);
+  assert.equal(r.body.error.code, "TEXT_LENGTH");
+});
+
+test("10,000자 넘는 글은 본문이 작아도 400 TEXT_LENGTH", { skip }, async () => {
+  const r = await post("/api/analyze", { text: "a".repeat(10001) });
+  assert.equal(r.status, 400);
+  assert.equal(r.body.error.code, "TEXT_LENGTH");
+});
+
+test("/api/cautions도 너무 큰 본문은 400 BAD_REQUEST", { skip }, async () => {
+  const r = await post("/api/cautions", { categoryId: "farmland", property: { 소재지: "가".repeat(20000) } });
+  assert.equal(r.status, 400);
+  assert.equal(r.body.error.code, "BAD_REQUEST");
+});
+
 test("정상 요청은 DESIGN §4.5 모양으로 답해요 (농지 → 농지취득자격증명 강조)", { skip }, async () => {
   const r = await post("/api/analyze", { text: SAMPLES[0].text });
   assert.equal(r.status, 200);

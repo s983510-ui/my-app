@@ -7,20 +7,16 @@ import { AiError, ConfigError, extractWithAi } from "@/lib/ai.ts";
 import { decideCategory, emptyProperty, pickCandidates, sanitizeExtraction } from "@/lib/categorize.ts";
 import { TableIncompleteError } from "@/lib/cautions.ts";
 import { buildCategoryResult, namedCandidates } from "@/lib/result.ts";
-import { errorResponse } from "@/lib/api.ts";
+import { errorResponse, readJsonLimited } from "@/lib/api.ts";
 
 export async function POST(request: Request) {
   // 1. 요청 횟수 (두 API 공통)
   if (!takeRequest(clientIp(request.headers)).ok) return errorResponse("RATE_LIMITED");
 
-  // 2. 글자 수
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return errorResponse("BAD_REQUEST");
-  }
-  const text = (body as { text?: unknown } | null)?.text;
+  // 2. 본문 크기(너무 크면 읽지 않아요) → 글자 수
+  const read = await readJsonLimited(request);
+  if (!read.ok) return errorResponse(read.reason === "TOO_LARGE" ? "TEXT_LENGTH" : "BAD_REQUEST");
+  const text = (read.body as { text?: unknown } | null)?.text;
   if (!isTextLengthOk(text)) return errorResponse("TEXT_LENGTH");
 
   // 3. 개인정보 지우기

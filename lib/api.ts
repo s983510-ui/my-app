@@ -26,3 +26,44 @@ export function errorResponse(code: ErrorCode): Response {
   if (STATUS[code] >= 500) console.error(`[auction-caution] ${code}`);
   return Response.json({ error: { code, message: MESSAGES[code] } }, { status: STATUS[code] });
 }
+
+/** 한 번에 받는 요청 본문의 최대 크기(바이트). 한글 10,000자는 30,000바이트라서 여유를 둬요(DESIGN §8). */
+export const BODY_MAX_BYTES = 65536;
+
+/**
+ * 요청 본문을 크기 제한 안에서만 읽어 JSON으로 바꿔요.
+ * 선언된 크기가 크면 읽지 않고, 선언이 없어도 제한을 넘는 순간 멈춰요.
+ */
+export async function readJsonLimited(
+  request: Request,
+  maxBytes: number = BODY_MAX_BYTES,
+): Promise<{ ok: true; body: unknown } | { ok: false; reason: "TOO_LARGE" | "BAD_JSON" }> {
+  const declared = Number(request.headers.get("content-length"));
+  if (declared > maxBytes) return { ok: false, reason: "TOO_LARGE" };
+
+  const reader = request.body?.getReader();
+  if (!reader) return { ok: false, reason: "BAD_JSON" };
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > maxBytes) {
+      await reader.cancel();
+      return { ok: false, reason: "TOO_LARGE" };
+    }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const c of chunks) {
+    bytes.set(c, offset);
+    offset += c.byteLength;
+  }
+  try {
+    return { ok: true, body: JSON.parse(new TextDecoder().decode(bytes)) };
+  } catch {
+    return { ok: false, reason: "BAD_JSON" };
+  }
+}

@@ -20,6 +20,13 @@ test("종류 8개 모두 항목이 3~6개이고, 필수 항목이 1개 이상 �
   }
 });
 
+test("종류마다 필수 항목이 모두 확인 완료(confirmed)예요 (DESIGN §8·§9)", () => {
+  for (const id of CATEGORY_IDS) {
+    const pending = CAUTIONS.filter((c) => c.category === id && c.required && c.status !== "confirmed").map((c) => c.id);
+    assert.deepEqual(pending, [], `${id}: 필수 항목이 검토 전이에요 → 배포하면 "안내를 준비하지 못했어요"가 나와요`);
+  }
+});
+
 test("쉬운 설명이 원문의 숫자·법령·조문·기관·조건어를 바꾸지 않았어요", () => {
   const problems = CAUTIONS.flatMap((c) => checkPlain(c));
   assert.deepEqual(problems, []);
