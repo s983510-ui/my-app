@@ -412,8 +412,8 @@ export const CAUTIONS: CautionItem[] = [
     steps: ["자동차365에서 등록원부(압류·저당)를 조회해요", "공고문에서 말소 절차와 인수 권리 안내를 확인해요"],
     agency: "차량등록사업소 (시·군·구청)",
     sources: [law("국세징수법", "제92조"), CAR365],
-    status: "needs-check",
-    checkedAt: DRAFT_DATE,
+    status: "confirmed",
+    checkedAt: "2026-10-29",
   },
   {
     id: "vehicle-04",
