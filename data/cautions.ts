@@ -722,7 +722,7 @@ export const CAUTIONS: CautionItem[] = [
     ],
     agency: "보험개발원",
     sources: [CAR365, { label: "카히스토리 (보험개발원 자동차 이력 조회)", url: "https://www.carhistory.or.kr" }],
-    status: "needs-check",
+    status: "confirmed",
     checkedAt: "2026-10-29",
   },
   {
@@ -739,7 +739,7 @@ export const CAUTIONS: CautionItem[] = [
     ],
     agency: "한국교통안전공단",
     sources: [law("자동차관리법", "제43조")],
-    status: "needs-check",
+    status: "confirmed",
     checkedAt: "2026-10-29",
   },
   {
@@ -756,7 +756,7 @@ export const CAUTIONS: CautionItem[] = [
     ],
     agency: "국토교통부 자동차리콜센터",
     sources: [{ label: "자동차리콜센터", url: "https://www.car.go.kr" }],
-    status: "needs-check",
+    status: "confirmed",
     checkedAt: "2026-10-29",
   },
 ];
