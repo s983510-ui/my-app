@@ -95,6 +95,8 @@ export type CautionItem = {
   /** 현장을 직접 볼 때 눈으로 확인할 점 (선택). onSiteStatus가 confirmed일 때만 화면에 나가요 */
   onSite?: string[];
   onSiteStatus?: CautionStatus;
+  /** 아직 검토 전인 현장 문장 초안. 화면에는 나가지 않고, 검토를 마치면 onSite로 옮겨요 */
+  onSiteDraft?: string[];
   /** 담당 기관 */
   agency: string;
   sources: CautionSource[];
