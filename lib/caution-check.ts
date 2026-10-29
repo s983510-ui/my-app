@@ -72,6 +72,14 @@ export function checkCautionItem(item: CautionItem): string[] {
       problems.push(`${where}: 현장에서 볼 점의 검토 상태(onSiteStatus)가 필요해요`);
     }
   }
+  if (item.notice !== undefined) {
+    if (!isFilledText(item.notice) || item.notice.length > PLAIN_MAX_LENGTH) {
+      problems.push(`${where}: 공고문 문장은 비어 있지 않고 ${PLAIN_MAX_LENGTH}자 이내여야 해요`);
+    }
+    if (item.noticeStatus !== "confirmed" && item.noticeStatus !== "needs-check") {
+      problems.push(`${where}: 공고문 문장의 검토 상태(noticeStatus)가 필요해요`);
+    }
+  }
   if (item.onSiteDraft !== undefined && (!Array.isArray(item.onSiteDraft) || !item.onSiteDraft.every((l) => isFilledText(l) && l.length <= 80))) {
     problems.push(`${where}: 현장 문장 초안은 80자 이내의 빈 칸 없는 문장이어야 해요`);
   }

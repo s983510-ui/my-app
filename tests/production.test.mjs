@@ -30,6 +30,10 @@ for (const id of CATEGORY_IDS) {
     const expected = CAUTIONS.filter((c) => c.category === id && c.status === "confirmed").map((c) => c.id).sort();
     assert.deepEqual(shown, expected);
     assert.ok(r.body.cautions.every((c) => !c.unreviewed), "검토 전 표시가 붙은 항목이 나왔어요");
+    const pendingNotice = new Set(CAUTIONS.filter((c) => c.notice && c.noticeStatus !== "confirmed").map((c) => c.id));
+    for (const c of r.body.cautions) {
+      if (pendingNotice.has(c.id)) assert.equal(c.notice, "", `${c.id}: 검토 전 공고문 문장이 나갔어요`);
+    }
     const pendingOnSite = new Set(CAUTIONS.filter((c) => c.onSite && c.onSiteStatus !== "confirmed").map((c) => c.id));
     for (const c of r.body.cautions) {
       if (pendingOnSite.has(c.id)) assert.deepEqual(c.onSite, [], `${c.id}: 검토 전 현장 문장이 나갔어요`);

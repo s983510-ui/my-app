@@ -51,3 +51,25 @@ test("PRD 예시 항목이 들어 있어요: 농지 → 농지취득자격증명
   assert.equal(item.required, true);
   assert.deepEqual(item.highlightWhen, { field: "지목", in: ["전", "답", "과수원"] });
 });
+
+// ── 공고문 문체 문장(notice): 쉬운 설명과 같은 규칙으로 표 내용을 바꾸지 않았는지 검사해요 (직원용 문안, PRD 6번) ──
+test("공고문 문장(notice)이 원문의 숫자·법령·조문·기관·조건어를 바꾸지 않았어요", () => {
+  const problems = CAUTIONS.filter((c) => c.notice).flatMap((c) => checkPlain({ ...c, plain: c.notice }).map((p) => p.replace(c.id, `${c.id}(공고문)`)));
+  assert.deepEqual(problems, []);
+});
+
+test("공고문 문장(notice)은 공고문 문체('~합니다·~바랍니다·~있습니다')이고 '~해요'체가 없어요", () => {
+  for (const c of CAUTIONS.filter((x) => x.notice)) {
+    for (const sentence of c.notice.split(/(?<=[.])\s*/).filter(Boolean)) {
+      assert.ok(/(습니다|바랍니다|니다)\.?$/.test(sentence) || /\)\.?$/.test(sentence), `${c.id}: 문장이 공고문 문체로 끝나지 않아요 → ${sentence}`);
+      assert.ok(!/(해요|세요|어요|아요|예요|이에요)\.?$/.test(sentence), `${c.id}: '해요'체가 남았어요 → ${sentence}`);
+    }
+  }
+});
+
+test("확인 완료(confirmed) 항목은 모두 공고문 문장이 있고, 검토 상태가 있어요", () => {
+  for (const c of CAUTIONS.filter((x) => x.status === "confirmed")) {
+    assert.ok(c.notice && c.notice.length > 0, `${c.id}: 공고문 문장이 없어요`);
+    assert.ok(c.noticeStatus === "confirmed" || c.noticeStatus === "needs-check", `${c.id}: noticeStatus가 없어요`);
+  }
+});

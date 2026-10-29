@@ -8,6 +8,7 @@ import PropertyTable from "./property-table.tsx";
 import CategoryPicker from "./category-picker.tsx";
 import CautionList from "./caution-list.tsx";
 import FieldChecklist from "./field-checklist.tsx";
+import NoticeBuilder from "./notice-builder.tsx";
 import ResultActions from "./result-actions.tsx";
 import type { AnalyzeResponse, CautionsResponse, ErrorResponse, NamedCategory } from "@/lib/view-types.ts";
 
@@ -120,6 +121,7 @@ export default function AuctionHelper({ initialCheckedAt, version }: { initialCh
           <>
             <CautionList cautions={cautions} />
             <FieldChecklist cautions={cautions} />
+            <NoticeBuilder key={cautions.map((c) => c.id).join(",")} cautions={cautions} categoryName={category.name} />
             <ResultActions category={category} cautions={cautions} checkedAt={checkedAt} onReset={reset} />
           </>
         )}

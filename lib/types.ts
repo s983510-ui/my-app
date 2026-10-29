@@ -86,6 +86,9 @@ export type CautionItem = {
   text: string;
   /** 검토된 쉬운 설명 (200자 이내, text의 숫자·기관·법령·조건어 그대로) */
   plain: string;
+  /** 공고문 "기타" 칸에 넣을 공고문 문체 문장(직원용, 쉬운 설명과 같은 내용). noticeStatus가 confirmed일 때만 문안에 들어가요 */
+  notice?: string;
+  noticeStatus?: CautionStatus;
   /** 이 종류에서 꼭 보여줘야 하는 항목인지 (PRD must 2 규칙 2) */
   required: boolean;
   /** 강조 조건. 없으면 null */

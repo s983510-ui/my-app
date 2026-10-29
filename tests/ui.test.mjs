@@ -298,3 +298,43 @@ test("물건 번호가 없는 온비드 주소는 서버에 묻지 않고 안내
     await browser.close();
   }
 });
+
+// ── 공고문 '기타' 문안 만들기 (직원용). 시험 서버는 검토 전 문장도 보여줘요 ──
+test("공고문 문안: 필수 항목이 미리 골라져 있고, 항목을 바꾸면 문안이 바뀌어요", { skip, timeout: 60000 }, async () => {
+  const { chromium } = createRequire(import.meta.url)("playwright");
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 390, height: 900 } });
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  try {
+    await page.goto(BASE + "/");
+    await page.fill("#paste", SAMPLES.find((s) => s.id === "S15").text); // 차량
+    await page.getByRole("button", { name: "분석하기" }).click();
+    await page.getByText("⑤ 공고문 ‘기타’ 문안 만들기").waitFor({ timeout: 15000 });
+    const area = page.locator("#notice-text");
+    const first = await area.inputValue();
+    assert.ok(first.startsWith("[입찰 전 유의사항]"));
+    assert.ok(first.includes("1. 차량을 낙찰받으면 자동차관리법 제12조"), first);
+    assert.ok(first.includes("2. 차량을 운행하려면 자동차손해배상 보장법 제5조"));
+    assert.ok(first.includes("※ 위 내용은 참고용 안내이며 법률 자문이 아닙니다."));
+    assert.ok(!first.includes("3. "), "필수 2개만 미리 골라져 있어야 해요");
+    assert.ok(await page.getByText("(2개 항목 ·").isVisible());
+
+    // 필수 하나를 빼고 다른 항목을 넣으면 번호가 다시 매겨져요
+    await page.getByLabel(/15일 이내 이전등록/, { exact: false }).last().uncheck();
+    await page.getByLabel("사고·침수 이력 확인").last().check();
+    const second = await area.inputValue();
+    assert.ok(!second.includes("자동차관리법 제12조"));
+    assert.ok(second.includes("1. 차량을 운행하려면"));
+    assert.ok(second.includes("2. 차량에 보험으로 처리된 사고나 침수 이력"));
+
+    // 모두 빼면 문안이 비고 복사 버튼이 꺼져요
+    await page.getByLabel(/운행 전에 의무보험 가입/).last().uncheck();
+    await page.getByLabel("사고·침수 이력 확인").last().uncheck();
+    assert.equal(await area.inputValue(), "");
+    assert.equal(await page.getByRole("button", { name: "문안 복사" }).isDisabled(), true);
+    assert.deepEqual(errors, []);
+  } finally {
+    await browser.close();
+  }
+});
