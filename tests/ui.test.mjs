@@ -240,7 +240,7 @@ test("사진을 올리면 읽은 글이 붙여넣기 칸에 들어가요 (개인
     const value = await page.inputValue("#paste");
     assert.ok(value.includes("지목: 답"));
     assert.ok(!value.includes("010-1234-5678"));
-    assert.ok(await page.getByText("개인정보 모양은 지웠어요").isVisible());
+    assert.ok(await page.getByText("전화번호·주민등록번호 모양은 지웠어요. 이름·주소 같은 다른 개인정보는 그대로이니 확인해 주세요").isVisible());
     // 읽은 글로 바로 분석할 수 있어요
     await page.getByRole("button", { name: "분석하기" }).click();
     await page.getByText("③ 이 물건에서 꼭 확인할 점").waitFor({ timeout: 15000 });
