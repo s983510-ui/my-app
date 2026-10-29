@@ -109,3 +109,53 @@ test("같은 접속자가 1분에 너무 많이 보내면 429, 두 API가 횟수
   assert.equal(last.status, 429);
   assert.equal(last.body.error.code, "RATE_LIMITED");
 });
+
+// ── 사진·링크 입력 (시험 서버는 AI_STUB=1이라 사진 읽기는 정해진 글을 돌려줘요) ──
+const PNG = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+
+test("사진 읽기: 글을 돌려주고 개인정보(전화번호)는 지워요", { skip }, async () => {
+  const r = await post("/api/ocr", { image: PNG });
+  assert.equal(r.status, 200);
+  assert.ok(r.body.text.includes("지목: 답"));
+  assert.equal(r.body.masked, true);
+  assert.ok(!r.body.text.includes("010-1234-5678"));
+});
+
+test("사진 읽기: 사진이 아니거나 허용되지 않는 형식이면 400 IMAGE_INVALID", { skip }, async () => {
+  for (const image of ["그냥 글", "data:image/gif;base64,AAAA", "data:text/html;base64,AAAA", null, 123]) {
+    const r = await post("/api/ocr", { image });
+    assert.equal(r.status, 400);
+    assert.equal(r.body.error.code, "IMAGE_INVALID");
+  }
+});
+
+test("사진 읽기: 너무 큰 본문은 읽지 않고 400 IMAGE_INVALID", { skip }, async () => {
+  const r = await post("/api/ocr", { image: "data:image/png;base64," + "A".repeat(6_000_000) });
+  assert.equal(r.status, 400);
+  assert.equal(r.body.error.code, "IMAGE_INVALID");
+});
+
+test("링크 불러오기: 온비드 밖 주소·내부 주소는 400 LINK_INVALID (서버가 열지 않아요)", { skip }, async () => {
+  for (const url of ["https://evil.com/", "http://www.onbid.co.kr/", "https://169.254.169.254/", "https://www.onbid.co.kr@evil.com/", "", null]) {
+    const r = await post("/api/fetch-link", { url });
+    assert.equal(r.status, 400, String(url));
+    assert.equal(r.body.error.code, "LINK_INVALID");
+  }
+});
+
+test("링크 불러오기: 깨진 요청은 400 BAD_REQUEST", { skip }, async () => {
+  const r = await post("/api/fetch-link", "이건 JSON이 아니에요");
+  assert.equal(r.status, 400);
+  assert.equal(r.body.error.code, "BAD_REQUEST");
+});
+
+test("사진·링크 요청도 같은 횟수 제한에 걸려요", { skip }, async () => {
+  const ip = "10.77.7.7";
+  let last;
+  for (let i = 0; i < 40; i++) {
+    last = await post("/api/fetch-link", { url: "https://evil.com/" }, ip);
+    if (last.status === 429) break;
+  }
+  assert.equal(last.status, 429);
+  assert.equal(last.body.error.code, "RATE_LIMITED");
+});

@@ -218,3 +218,47 @@ for (const c of cases) {
     }
   });
 }
+
+// ── 사진·링크로 넣기 ──
+test("사진을 올리면 읽은 글이 붙여넣기 칸에 들어가요 (개인정보는 지워져요)", { skip, timeout: 60000 }, async () => {
+  const { chromium } = createRequire(import.meta.url)("playwright");
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 390, height: 900 } });
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  try {
+    await page.goto(BASE + "/");
+    assert.ok(await page.getByText("사진을 외부 AI(OpenAI)에 전달해요").isVisible());
+    const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64");
+    await page.setInputFiles('input[type="file"]', { name: "capture.png", mimeType: "image/png", buffer: png });
+    await page.getByText("사진에서 읽은 글을 아래 칸에 넣었어요").waitFor({ timeout: 15000 });
+    const value = await page.inputValue("#paste");
+    assert.ok(value.includes("지목: 답"));
+    assert.ok(!value.includes("010-1234-5678"));
+    assert.ok(await page.getByText("개인정보 모양은 지웠어요").isVisible());
+    // 읽은 글로 바로 분석할 수 있어요
+    await page.getByRole("button", { name: "분석하기" }).click();
+    await page.getByText("③ 이 물건에서 꼭 확인할 점").waitFor({ timeout: 15000 });
+    assert.deepEqual(errors, []);
+  } finally {
+    await browser.close();
+  }
+});
+
+test("사진이 아닌 파일이나 허용되지 않은 링크는 안내가 나와요", { skip, timeout: 60000 }, async () => {
+  const { chromium } = createRequire(import.meta.url)("playwright");
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 390, height: 900 } });
+  try {
+    await page.goto(BASE + "/");
+    await page.setInputFiles('input[type="file"]', { name: "a.png", mimeType: "image/png", buffer: Buffer.from("사진이 아니에요") });
+    await page.getByRole("alert").filter({ hasText: "사진을 열 수 없어요" }).waitFor({ timeout: 10000 });
+
+    await page.fill('input[type="url"]', "https://evil.com/");
+    await page.getByRole("button", { name: "링크 불러오기" }).click();
+    await page.getByRole("alert").filter({ hasText: "온비드(onbid.co.kr) 링크만" }).waitFor({ timeout: 10000 });
+    assert.equal(await page.inputValue("#paste"), "");
+  } finally {
+    await browser.close();
+  }
+});

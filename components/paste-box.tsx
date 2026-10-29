@@ -1,6 +1,7 @@
 "use client";
 // C. 붙여넣기 (DESIGN §3.1) — 개인정보 안내, 글자 수, 분석하기 (PRD 7번, must 1 규칙 4)
 import { TEXT_MAX, TEXT_MIN } from "@/lib/limits-shared.ts";
+import InputSources from "./input-sources.tsx";
 
 type Props = {
   value: string;
@@ -14,10 +15,11 @@ export default function PasteBox({ value, onChange, onSubmit, busy }: Props) {
   const canSubmit = !busy && value.trim().length >= TEXT_MIN && length <= TEXT_MAX;
   return (
     <section className="no-print rounded-xl border border-line bg-white p-4 sm:p-5">
-      <h2 className="text-lg font-bold text-navy">① 온비드 물건 정보를 붙여넣어 주세요</h2>
+      <h2 className="text-lg font-bold text-navy">① 온비드 물건 정보를 넣어 주세요</h2>
       <p className="mt-2 rounded-lg bg-card px-3 py-2 text-sm leading-6 text-muted">
         ℹ 개인정보(이름·연락처 등)는 지우고 붙여넣어 주세요. 입력한 글은 분석을 위해 외부 AI(OpenAI)로 보내져요.
       </p>
+      <InputSources onText={onChange} disabled={busy} />
       <label htmlFor="paste" className="sr-only">
         온비드 물건 정보
       </label>

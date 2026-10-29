@@ -1,0 +1,62 @@
+// 사용자가 준 온비드 링크의 페이지 글자를 읽어 와요. 허용된 사이트(온비드)만 열고, 크기·시간·이동 횟수를 제한해요.
+import { PAGE_MAX_BYTES, htmlToText, parseAllowedLink } from "./input-source.ts";
+
+export const LINK_TIMEOUT_MS = 6000;
+const MAX_REDIRECTS = 3;
+
+/** 링크를 열지 못했거나 글자를 읽지 못했어요. */
+export class LinkError extends Error {}
+
+/** 허용된 주소의 페이지에서 글자만 뽑아 돌려줘요. 다른 사이트로 이동하면 멈춰요. */
+export async function fetchLinkText(start: URL): Promise<string> {
+  let url = start;
+  for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), LINK_TIMEOUT_MS);
+    try {
+      const res = await fetch(url.href, {
+        redirect: "manual",
+        signal: controller.signal,
+        headers: { Accept: "text/html,text/plain", "Accept-Language": "ko-KR,ko;q=0.9" },
+      });
+      if (res.status >= 300 && res.status < 400) {
+        const next = parseAllowedLink(new URL(res.headers.get("location") ?? "", url).href);
+        if (!next) throw new LinkError("허용되지 않은 주소로 이동해요");
+        url = next;
+        continue;
+      }
+      if (!res.ok) throw new LinkError(`응답 ${res.status}`);
+      const type = (res.headers.get("content-type") ?? "").toLowerCase();
+      if (type.indexOf("text/html") === -1 && type.indexOf("text/plain") === -1) throw new LinkError("글 페이지가 아니에요");
+
+      const reader = res.body?.getReader();
+      if (!reader) throw new LinkError("내용이 없어요");
+      const chunks: Uint8Array[] = [];
+      let total = 0;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        total += value.byteLength;
+        if (total > PAGE_MAX_BYTES) {
+          await reader.cancel();
+          break; // 너무 크면 앞부분만 써요
+        }
+        chunks.push(value);
+      }
+      const bytes = new Uint8Array(chunks.reduce((n, c) => n + c.byteLength, 0));
+      let offset = 0;
+      for (const c of chunks) {
+        bytes.set(c, offset);
+        offset += c.byteLength;
+      }
+      const raw = new TextDecoder("utf-8").decode(bytes);
+      return type.indexOf("text/html") !== -1 ? htmlToText(raw) : raw;
+    } catch (e) {
+      if (e instanceof LinkError) throw e;
+      throw new LinkError(e instanceof Error ? e.name : "unknown");
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  throw new LinkError("이동이 너무 많아요");
+}
