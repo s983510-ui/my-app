@@ -40,3 +40,18 @@ body {
     background: #ffffff;
   }
 }
+
+/* 접고 펼치는 칸(참고 절차·담당 기관·근거): 기본 삼각형 대신 글자 화살표를 써요 (Chrome 109 호환) */
+.detail-summary {
+  cursor: pointer;
+  list-style: none;
+}
+.detail-summary::-webkit-details-marker {
+  display: none;
+}
+.detail-summary::before {
+  content: "▸ ";
+}
+.detail-box[open] > .detail-summary::before {
+  content: "▾ ";
+}

@@ -172,3 +172,49 @@ test("서버 응답이 15초 넘게 없으면 오래 걸린다는 안내가 나�
     await browser.close();
   }
 });
+
+// ── 접고 펼치기: 필수만 펼쳐져 있고, 눌러서 펼치며, 인쇄 때는 모두 펼쳐져요 ──
+for (const c of cases) {
+  test(`접고 펼치기 (${c.name})`, { skip, timeout: 60000 }, async () => {
+    const { chromium } = createRequire(import.meta.url)("playwright");
+    const browser = await chromium.launch();
+    const page = await browser.newPage({ viewport: { width: c.width, height: 900 } });
+    const errors = [];
+    page.on("pageerror", (e) => errors.push(e.message));
+    if (c.old) await page.addInitScript(shim);
+    try {
+      await page.goto(BASE + "/");
+      await page.fill("#paste", SAMPLES.find((s) => s.id === "S15").text);
+      await page.getByRole("button", { name: "분석하기" }).click();
+      await page.getByText("③ 이 물건에서 꼭 확인할 점").waitFor({ timeout: 15000 });
+
+      const opens = () => page.locator("main li details").evaluateAll((els) => els.map((e) => e.open));
+      const first = await opens();
+      const required = await page.locator("main li").evaluateAll((els) => els.filter((e) => e.querySelector("details")).map((e) => /필수/.test(e.innerText)));
+      assert.deepEqual(first, required, "필수 항목만 처음부터 펼쳐져 있어야 해요");
+      assert.ok(first.some((o) => !o), "접힌 항목이 있어야 해요");
+
+      // 접힌 항목의 제목을 눌러 펼치기
+      const closed = page.locator("main li details:not([open]) summary").first();
+      await closed.click();
+      assert.equal((await opens()).filter(Boolean).length, first.filter(Boolean).length + 1);
+
+      await page.getByRole("button", { name: "모두 펼치기" }).click();
+      assert.ok((await opens()).every(Boolean));
+      await page.getByRole("button", { name: "모두 접기" }).click();
+      assert.ok((await opens()).every((o) => !o));
+
+      // 인쇄 직전에는 모두 펼쳐지고, 끝나면 원래대로 돌아와요
+      await page.evaluate(() => window.dispatchEvent(new Event("beforeprint")));
+      assert.ok((await opens()).every(Boolean));
+      await page.evaluate(() => window.dispatchEvent(new Event("afterprint")));
+      assert.ok((await opens()).every((o) => !o));
+
+      assert.ok((await page.evaluate(() => document.documentElement.scrollWidth)) <= c.width);
+      assert.deepEqual(errors, []);
+      await page.screenshot({ path: `${OUT}collapse-${c.name}.png`, fullPage: true });
+    } finally {
+      await browser.close();
+    }
+  });
+}
