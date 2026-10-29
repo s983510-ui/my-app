@@ -1453,4 +1453,87 @@ export const CAUTIONS: CautionItem[] = [
     status: "confirmed",
     checkedAt: "2026-10-29",
   },
+
+  // ───────── 동산 경험자 팁 (2026-10-29, kind: "tip") ─────────
+  // 부동산과 같은 기준치(CHECK.md 4번)로 Claude가 검토·확정했어요(조인우 위임). 출처 원문은 이 작업 공간에서 열 수 없어 검색 결과로 교차 확인했어요.
+  {
+    id: "machinery-04",
+    kind: "tip",
+    category: "machinery",
+    title: "건설기계는 가동 시간·정비 기록과 기름 샘·마모를 함께",
+    text: "중고 건설기계는 연식과 함께 가동 시간(시간계)과 정비 기록, 엔진·유압 계통의 기름 샘, 하부(트랙·롤러)와 붐·버킷 연결부의 마모를 같이 봐야 한다는 조언이 많아요. 가능하면 현장에서 직접 살펴보세요.",
+    plain: "중고 건설기계는 연식과 함께 가동 시간(시간계)과 정비 기록, 엔진·유압 계통의 기름 샘, 하부(트랙·롤러)와 붐·버킷 연결부의 마모를 같이 봐야 한다는 조언이 많아요. 가능하면 현장에서 직접 살펴보세요.",
+    required: false,
+    highlightWhen: { field: "품목", includes: ["건설기계", "굴착기", "굴삭기", "지게차"] },
+    steps: [
+      "공고문과 감정 자료에서 가동 시간·정비 기록이 있는지 확인하세요",
+      "현장에서 기름 샘과 하부·연결부 마모를 직접 살펴보세요",
+    ],
+    onSite: [
+      "계기판의 가동 시간(시간계)을 사진으로 남기세요",
+      "엔진·유압 호스 주변과 바닥에 기름이 샌 자국이 있는지 확인하세요",
+      "트랙·롤러와 붐·버킷 연결부가 심하게 닳거나 흔들리는지 확인하세요",
+    ],
+    onSiteStatus: "confirmed",
+    agency: "해당 없음 (경험자 팁)",
+    sources: [
+      { label: "Construction Equipment Guide (중고 장비 점검 항목)", url: "https://www.constructionequipmentguide.com/used-iron-inspections-what-to-look-for-before-buying/45451" },
+      { label: "Farmers Journal (중고 로더 구입 점검)", url: "https://www.farmersjournal.ie/amp/machinery/farm-machinery/buying-a-used-loader-without-buying-someone-elses-repair-bills-935024" },
+      { label: "틸노트 (중고 굴삭기 구매 점검)", url: "https://tilnote.io/pages/6ad641e819114ceafa1689ad" },
+    ],
+    status: "confirmed",
+    checkedAt: "2026-10-29",
+  },
+  {
+    id: "machinery-05",
+    kind: "tip",
+    category: "machinery",
+    title: "건설기계 등록원부로 압류·저당 확인",
+    text: "굴착기·지게차 같은 건설기계는 등록원부에 소유자와 압류·저당 기록이 남아요. 입찰 전에 정부24에서 건설기계 등록원부를 발급받아 압류·저당과 소유자를 확인하세요.",
+    plain: "굴착기·지게차 같은 건설기계는 등록원부에 소유자와 압류·저당 기록이 남아요. 입찰 전에 정부24에서 건설기계 등록원부를 발급받아 압류·저당과 소유자를 확인하세요.",
+    required: false,
+    highlightWhen: { field: "품목", includes: ["건설기계", "굴착기", "굴삭기", "지게차"] },
+    steps: [
+      "공고문에서 등록번호나 차대번호를 확인하세요",
+      "정부24에서 건설기계 등록원부를 발급받아 압류·저당을 확인하세요",
+    ],
+    onSite: [
+      "기계에 붙은 등록번호판·차대번호가 공고문과 같은지 확인하세요",
+    ],
+    onSiteStatus: "confirmed",
+    agency: "시·도 건설기계 등록 담당 부서",
+    sources: [
+      law("건설기계관리법"),
+      GOV24,
+      { label: "건설기계 등록원부 인터넷 발급 방법", url: "https://www.finanandinvest.kr/2025/08/blog-post_854.html" },
+    ],
+    status: "confirmed",
+    checkedAt: "2026-10-29",
+  },
+  {
+    id: "movable-etc-04",
+    kind: "tip",
+    category: "movable-etc",
+    title: "명품·귀금속은 감정 기준과 위조 보상 조건부터",
+    text: "압류 명품·귀금속 공매 중에는 위조품으로 확인되면 입찰금을 돌려주고 보상하는 곳도 있지만 기관마다 조건이 달라요. 브랜드 가품이 금 함량 등을 기준으로 평가돼 나온 사례도 있으니 공고문의 감정 기준과 보상 조건을 확인하세요.",
+    plain: "압류 명품·귀금속 공매 중에는 위조품으로 확인되면 입찰금을 돌려주고 보상하는 곳도 있지만 기관마다 조건이 달라요. 브랜드 가품이 금 함량 등을 기준으로 평가돼 나온 사례도 있으니 공고문의 감정 기준과 보상 조건을 확인하세요.",
+    required: false,
+    highlightWhen: { field: "품목", includes: ["귀금속", "명품", "시계", "가방", "반지", "목걸이", "팔찌"] },
+    steps: [
+      "공고문에서 감정 기관·감정 기준(브랜드 정품인지, 금 함량인지)을 확인하세요",
+      "위조품일 때 환불·보상 조건과 신청 기한을 확인하세요",
+    ],
+    onSite: [
+      "열람할 수 있다면 감정서·보증서가 물건과 함께 있는지 확인하세요",
+    ],
+    onSiteStatus: "confirmed",
+    agency: "공매 기관(공고문 담당)",
+    sources: [
+      { label: "서울신문 (2025, 고양시 압류품 공매 위조품 보상)", url: "https://m.go.seoul.co.kr/news/2025/08/11/20250811500068" },
+      { label: "위키트리 (위조품이면 전액 보상하는 공매)", url: "https://www.wikitree.co.kr/articles/1070587" },
+      { label: "경인일보 (압류 공매 귀금속 가품 출품)", url: "https://www.kyeongin.com/article/1749847" },
+    ],
+    status: "confirmed",
+    checkedAt: "2026-10-29",
+  },
 ];

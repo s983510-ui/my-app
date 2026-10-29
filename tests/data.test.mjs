@@ -95,3 +95,9 @@ test("부동산 경험자 팁은 확정된 것이 종류마다 2개 이상이고
     for (const t of tips) assert.ok(t.sources.length >= 2, `${t.id}: 출처가 ${t.sources.length}곳뿐이에요 (2곳 이상 필요)`);
   }
 });
+
+test("동산 경험자 팁(기계·기타 동산)도 확정된 것은 출처가 2곳 이상이에요", () => {
+  for (const t of CAUTIONS.filter((c) => (c.category === "machinery" || c.category === "movable-etc") && c.kind === "tip" && c.status === "confirmed")) {
+    assert.ok(t.sources.length >= 2, `${t.id}: 출처가 ${t.sources.length}곳뿐이에요 (2곳 이상 필요)`);
+  }
+});
