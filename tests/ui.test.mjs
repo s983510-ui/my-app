@@ -31,7 +31,7 @@ for (const c of cases) {
       await page.goto(BASE + "/");
 
       // 처음: A·B·C만, 20자 미만이면 분석하기 꺼짐
-      await page.getByText("공매 물건 주의사항 도우미").first().waitFor();
+      await page.getByText("온비드 물건 주의사항 도우미").first().waitFor();
       assert.ok(await page.getByText("참고용 안내이며 법률 자문이 아닙니다").isVisible());
       assert.ok(await page.getByText("주의사항 표 마지막 확인일").isVisible());
       assert.ok(await page.getByText("외부 AI(OpenAI)로 보내져요").isVisible());
