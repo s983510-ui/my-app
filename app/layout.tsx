@@ -11,7 +11,7 @@ const notoSansKr = Noto_Sans_KR({
 });
 
 export const metadata: Metadata = {
-  title: "공매 물건 주의사항 도우미",
+  title: "온비드 물건 주의사항 도우미",
   // 브라우저 자동 번역(크롬 번역 등)이 한국어 문장을 다시 번역해 뜻이 틀어지지 않게 막아요.
   other: { google: "notranslate" },
   description: "온비드 물건 정보를 붙여넣으면, 입찰 전에 꼭 확인할 점과 참고 절차·근거를 정리해 드려요. 참고용 안내이며 법률 자문이 아닙니다.",

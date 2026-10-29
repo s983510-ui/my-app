@@ -6,7 +6,7 @@ import type { CautionViewData, NamedCategory } from "@/lib/view-types.ts";
 type Props = { category: NamedCategory; cautions: CautionViewData[]; checkedAt: string | null; onReset: () => void };
 
 function toText(category: NamedCategory, cautions: CautionViewData[], checkedAt: string | null): string {
-  const lines = [`[공매 물건 주의사항 도우미] 종류: ${category.name}`, "※ 참고용 안내이며 법률 자문이 아닙니다. 최종 확인은 공고문과 관할 기관에서 해 주세요.", `주의사항 표 마지막 확인일: ${checkedAt ?? "검토 중"}`, ""];
+  const lines = [`[온비드 물건 주의사항 도우미] 종류: ${category.name}`, "※ 참고용 안내이며 법률 자문이 아닙니다. 최종 확인은 공고문과 관할 기관에서 해 주세요.", `주의사항 표 마지막 확인일: ${checkedAt ?? "검토 중"}`, ""];
   cautions.forEach((c, i) => {
     lines.push(`${i + 1}. ${c.required ? "[필수] " : ""}${c.highlight ? "[해당 가능성 높음] " : ""}${c.title}`);
     lines.push(`   ${c.plain}`);
