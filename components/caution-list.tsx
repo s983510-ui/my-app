@@ -13,10 +13,12 @@ function CautionItem({ item }: { item: CautionViewData }) {
           <summary className="detail-summary">
             {item.required && <span className="mr-2 inline-block rounded bg-accent px-2 py-0.5 text-xs font-bold text-white">필수</span>}
             {item.highlight && <span className="mr-2 inline-block rounded bg-good px-2 py-0.5 text-xs font-bold text-white">해당 가능성 높음</span>}
+            {item.tip && <span className="mr-2 inline-block rounded bg-navy px-2 py-0.5 text-xs font-bold text-white">경험자 팁</span>}
             {item.unreviewed && <span className="mr-2 inline-block rounded bg-muted px-2 py-0.5 text-xs font-bold text-white">검토 전 (시험용)</span>}
             <h3 className="inline font-bold text-ink">{item.title}</h3>
           </summary>
           <p className="mt-2 leading-7 text-ink">{item.plain}</p>
+          {item.tip && <p className="mt-1 text-xs text-muted">법적 근거가 아니라 경험자들이 흔히 확인하는 점이에요. 참고만 하시고, 판단은 직접 해 주세요.</p>}
           {item.steps.length > 0 && (
             <div className="mt-2 text-sm leading-6">
               <p className="font-semibold text-navy">▸ 참고 절차</p>
@@ -32,7 +34,7 @@ function CautionItem({ item }: { item: CautionViewData }) {
             {item.agency}
           </p>
           <p className="mt-1 text-sm">
-            <span className="font-semibold text-navy">▸ 근거: </span>
+            <span className="font-semibold text-navy">{item.tip ? "▸ 참고 자료: " : "▸ 근거: "}</span>
             {item.sources.map((s, i) => (
               <span key={s.url + i}>
                 {i > 0 && " · "}

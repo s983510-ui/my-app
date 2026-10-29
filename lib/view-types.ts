@@ -9,6 +9,8 @@ export type CautionViewData = {
   /** 공고문 문체 문장 (검토 전이면 빈 글) */
   notice: string;
   required: boolean;
+  /** 경험자 팁(법적 근거 아님)인지 */
+  tip: boolean;
   highlight: boolean;
   steps: string[];
   /** 현장에서 볼 점 (검토 전이면 빈 목록) */

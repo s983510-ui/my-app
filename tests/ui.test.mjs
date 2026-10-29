@@ -353,3 +353,25 @@ test("공고문 문안: 필수 항목이 미리 골라져 있고, 항목을 바�
     await browser.close();
   }
 });
+
+// ── 경험자 팁 (2026-10-29): 3단계 목록에 섞여 '경험자 팁' 표시가 붙고, 10년 넘은 차면 '해당 가능성 높음'이 붙어요. 시험 서버는 검토 전 팁도 보여줘요 ──
+test("경험자 팁: 화물차(2016년식)에 '경험자 팁' 표시와 연식 강조가 나와요", { skip, timeout: 60000 }, async () => {
+  const { chromium } = createRequire(import.meta.url)("playwright");
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  try {
+    await page.goto(BASE + "/");
+    await page.fill("#paste", SAMPLES.find((s) => s.id === "S16").text);
+    await page.getByRole("button", { name: "분석하기" }).click();
+    const card = page.locator("li", { hasText: "10년 넘은 차는 아래쪽 녹·기름 샘·타이어를 더 꼼꼼히" });
+    await card.first().waitFor();
+    assert.equal(await card.getByText("경험자 팁", { exact: true }).count(), 1);
+    assert.equal(await card.getByText("해당 가능성 높음").count(), 1);
+    assert.ok((await page.getByText("경험자 팁", { exact: true }).count()) >= 4);
+    assert.deepEqual(errors, []);
+  } finally {
+    await browser.close();
+  }
+});

@@ -58,10 +58,17 @@ export type PropertyInfo = Partial<Record<PropertyField, string | null>>;
 // ───── 주의사항 표 ─────
 // Design Ref: §4.5 주의사항 표 항목 — 주의사항 내용은 이 표에서만 나와요(PRD must 2 규칙 1).
 
-/** 이 물건에 해당할 가능성이 높을 때 강조하는 조건. 물건 정보의 한 칸 값이 목록 중 하나와 정확히 같아야 해요 (PRD must 2 규칙 5) */
+/**
+ * 이 물건에 해당할 가능성이 높을 때 강조하는 조건 (PRD must 2 규칙 5). 셋 중 하나만 써요.
+ * - in: 칸 값이 목록 중 하나와 정확히 같을 때 (예: 지목 "답")
+ * - includes: 칸 값에 낱말이 그대로 들어 있을 때 (예: 차종·연식에 "화물") — 2026-10-29 세부 분류용으로 추가
+ * - ageAtLeast: 칸 값의 네 자리 연도가 올해보다 이 햇수 이상 오래됐을 때 (예: 10 → 10년 넘은 차)
+ */
 export type HighlightCondition = {
   field: PropertyField;
-  in: string[];
+  in?: string[];
+  includes?: string[];
+  ageAtLeast?: number;
 };
 
 /** 근거 출처 (PRD must 2 규칙 3: 항목마다 1개 이상) */
@@ -79,6 +86,11 @@ export type CautionStatus = "confirmed" | "needs-check";
 export type CautionItem = {
   /** 항목 번호. "종류id-두자리숫자" 예: "farmland-01" */
   id: string;
+  /**
+   * 항목 종류. 없으면 법령·공식 안내 항목이에요.
+   * "tip"은 경험자 팁(법적 근거가 아니라 경험자들이 흔히 보는 점)이에요. 필수가 될 수 없고, 화면에 '경험자 팁' 표시가 붙어요 (2026-10-29 조인우 결정)
+   */
+  kind?: "tip";
   category: CategoryId;
   /** 제목. 예: "농지취득자격증명" */
   title: string;
