@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test tests/categories.test.mjs tests/caution-format.test.mjs tests/rules.test.mjs tests/data.test.mjs tests/samples.test.mjs tests/style.test.mjs"
+    "test": "node --test tests/categories.test.mjs tests/caution-format.test.mjs tests/rules.test.mjs tests/data.test.mjs tests/samples.test.mjs tests/style.test.mjs tests/input.test.mjs"
   },
   "dependencies": {
     "next": "16.4.3",

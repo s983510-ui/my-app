@@ -1,7 +1,17 @@
 // 서버 API의 오류 응답 모양을 한곳에서 만들어요.
 // Design Ref: §7.1 오류 코드 — { "error": { "code", "message" } }
 
-export type ErrorCode = "TEXT_LENGTH" | "BAD_CATEGORY" | "RATE_LIMITED" | "TABLE_INCOMPLETE" | "CONFIG" | "BAD_REQUEST";
+export type ErrorCode =
+  | "TEXT_LENGTH"
+  | "BAD_CATEGORY"
+  | "RATE_LIMITED"
+  | "TABLE_INCOMPLETE"
+  | "CONFIG"
+  | "BAD_REQUEST"
+  | "IMAGE_INVALID"
+  | "OCR_FAILED"
+  | "LINK_INVALID"
+  | "LINK_FAILED";
 
 export const MESSAGES: Record<ErrorCode, string> = {
   TEXT_LENGTH: "20자 이상 10,000자 이하로 붙여넣어 주세요",
@@ -10,6 +20,10 @@ export const MESSAGES: Record<ErrorCode, string> = {
   TABLE_INCOMPLETE: "안내를 준비하지 못했어요. 잠시 후 다시 시도해 주세요",
   CONFIG: "서버 설정이 필요해요",
   BAD_REQUEST: "요청 형식이 올바르지 않아요",
+  IMAGE_INVALID: "사진을 읽을 수 없어요. jpg·png 사진을 다시 올려 주세요",
+  OCR_FAILED: "사진에서 글자를 읽지 못했어요. 더 선명한 사진으로 다시 올리거나 글을 붙여넣어 주세요",
+  LINK_INVALID: "온비드(onbid.co.kr) 링크만 불러올 수 있어요",
+  LINK_FAILED: "링크에서 글자를 읽지 못했어요. 사진을 올리거나 글을 붙여넣어 주세요",
 };
 
 const STATUS: Record<ErrorCode, number> = {
@@ -19,6 +33,10 @@ const STATUS: Record<ErrorCode, number> = {
   TABLE_INCOMPLETE: 500,
   CONFIG: 500,
   BAD_REQUEST: 400,
+  IMAGE_INVALID: 400,
+  OCR_FAILED: 502,
+  LINK_INVALID: 400,
+  LINK_FAILED: 502,
 };
 
 /** 오류 응답을 만들어요. 서버 기록에는 붙여넣은 글 없이 오류 코드만 남겨요(DESIGN §8). */

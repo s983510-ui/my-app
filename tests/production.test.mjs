@@ -60,6 +60,18 @@ test("운영 모드: OpenAI 키가 없으면 CONFIG 오류가 나요", { skip },
   assert.equal(body.error.code, "CONFIG");
 });
 
+test("운영 모드: 사진 읽기는 키가 없으면 CONFIG, 링크는 온비드 밖 주소를 막아요", { skip }, async () => {
+  const PNG = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+  const post = (path, body) =>
+    fetch(`${BASE}${path}`, { method: "POST", headers: { "Content-Type": "application/json", "x-forwarded-for": `10.20.2.${++seq}` }, body: JSON.stringify(body) });
+  const ocr = await post("/api/ocr", { image: PNG });
+  assert.equal(ocr.status, 500);
+  assert.equal((await ocr.json()).error.code, "CONFIG");
+  const link = await post("/api/fetch-link", { url: "https://169.254.169.254/latest/meta-data/" });
+  assert.equal(link.status, 400);
+  assert.equal((await link.json()).error.code, "LINK_INVALID");
+});
+
 // 시험용 AI 흉내(AI_STUB)가 운영에서 켜져 있으면 서버가 정상으로 일하지 못해야 해요 (DESIGN §8).
 // Next.js는 시작 점검(instrumentation.ts)에서 오류가 나면 프로그램은 떠 있어도 모든 요청에 500 오류를 줘요.
 test("운영 모드: AI_STUB=1이면 서버가 요청을 받지 않아요", { skip: !process.env.CHECK_START && "CHECK_START=1일 때만 해요 (빌드 필요)", timeout: 60000 }, async () => {
