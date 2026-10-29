@@ -298,3 +298,18 @@ test("물건 번호가 없는 온비드 주소는 서버에 묻지 않고 안내
     await browser.close();
   }
 });
+
+// ── 브라우저 자동 번역 방지: 번역 도구가 한국어 문장을 바꿔 놓지 않게 해요 ──
+test("페이지가 자동 번역을 막아요 (translate=no, notranslate)", { skip, timeout: 30000 }, async () => {
+  const { chromium } = createRequire(import.meta.url)("playwright");
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
+  try {
+    await page.goto(BASE + "/");
+    assert.equal(await page.locator("html").getAttribute("lang"), "ko");
+    assert.equal(await page.locator("html").getAttribute("translate"), "no");
+    assert.equal(await page.locator('meta[name="google"]').getAttribute("content"), "notranslate");
+  } finally {
+    await browser.close();
+  }
+});
