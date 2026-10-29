@@ -56,7 +56,12 @@ for (const id of order) {
     lines.push(`- **쉬운 설명 (화면에 보임):** ${item.plain}`);
     if (item.onSiteDraft) lines.push(`- **현장에서 볼 점 초안 (검토 전, 화면에 안 보임):** ${item.onSiteDraft.map((s, i) => `${i + 1}) ${s}`).join(" ")}`);
     if (item.notice) lines.push(`- **공고문 문장 (직원용 문안, ${item.noticeStatus === "confirmed" ? "확인 완료" : "검토 전"}):** ${item.notice}`);
-    if (item.highlightWhen) lines.push(`- **강조 조건:** '${item.highlightWhen.field}' 값이 ${item.highlightWhen.in.join("·")} 중 하나일 때`);
+    if (item.kind === "tip") lines.push("- **종류:** 경험자 팁 (법적 근거 아님, 출처 원문을 열어 내용이 맞는지 확인해 주세요)");
+    if (item.highlightWhen) {
+      const h = item.highlightWhen;
+      const cond = h.in ? `값이 ${h.in.join("·")} 중 하나일 때` : h.includes ? `값에 ${h.includes.join("·")} 중 하나가 들어 있을 때` : `연도가 올해보다 ${h.ageAtLeast}년 이상 오래됐을 때`;
+      lines.push(`- **강조 조건:** '${h.field}' ${cond}`);
+    }
     lines.push(`- **참고 절차:** ${item.steps.map((s, i) => `${i + 1}) ${s}`).join(" ")}`);
     lines.push(`- **담당 기관:** ${item.agency}`);
     lines.push(`- **출처:** ${item.sources.map((s) => `[${s.label}](${encodeURI(s.url)})`).join(", ")}`);

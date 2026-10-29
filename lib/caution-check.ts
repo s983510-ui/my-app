@@ -56,10 +56,20 @@ export function checkCautionItem(item: CautionItem): string[] {
     if (!h || (PROPERTY_FIELDS as readonly string[]).indexOf(h.field) === -1) {
       problems.push(`${where}: 강조 조건의 칸 이름이 물건 정보 칸 목록에 없어요`);
     }
-    if (!h || !Array.isArray(h.in) || h.in.length === 0 || !h.in.every(isFilledText)) {
-      problems.push(`${where}: 강조 조건의 값 목록이 비었어요`);
+    const kinds = h ? [h.in, h.includes, h.ageAtLeast].filter((v) => v !== undefined).length : 0;
+    if (kinds !== 1) {
+      problems.push(`${where}: 강조 조건은 in·includes·ageAtLeast 중 하나만 써야 해요`);
+    } else if (h && h.ageAtLeast !== undefined) {
+      if (!Number.isInteger(h.ageAtLeast) || h.ageAtLeast < 1) problems.push(`${where}: ageAtLeast는 1 이상의 정수여야 해요`);
+    } else {
+      const list = h ? (h.in ?? h.includes) : undefined;
+      if (!Array.isArray(list) || list.length === 0 || !list.every(isFilledText)) {
+        problems.push(`${where}: 강조 조건의 값 목록이 비었어요`);
+      }
     }
   }
+  if (item.kind !== undefined && item.kind !== "tip") problems.push(`${where}: 항목 종류(kind)는 "tip"만 쓸 수 있어요`);
+  if (item.kind === "tip" && item.required) problems.push(`${where}: 경험자 팁은 필수 항목이 될 수 없어요`);
 
   if (!Array.isArray(item.steps) || !item.steps.every(isFilledText)) {
     problems.push(`${where}: 참고 절차에 빈 단계가 있어요`);

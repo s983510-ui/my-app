@@ -16,9 +16,12 @@ test("표의 모든 항목이 형식을 지켜요 (출처 1개 이상, https, �
 const MAX_TEN = ["farmland", "forest", "land", "building-res", "building-nonres", "vehicle"];
 test("종류 8개 모두 항목 수가 기준 안이고(부동산 5종·차량 3~10개, 나머지 3~6개), 필수 항목이 1개 이상 있어요", () => {
   for (const id of CATEGORY_IDS) {
-    const items = CAUTIONS.filter((c) => c.category === id);
+    // 경험자 팁(kind: "tip")은 법령·공식 안내 항목 수에 넣지 않고, 종류마다 10개까지 따로 세요 (2026-10-29)
+    const items = CAUTIONS.filter((c) => c.category === id && c.kind !== "tip");
+    const tips = CAUTIONS.filter((c) => c.category === id && c.kind === "tip");
     const max = MAX_TEN.indexOf(id) !== -1 ? 10 : 6;
     assert.ok(items.length >= 3 && items.length <= max, `${id}: 항목 ${items.length}개 (최대 ${max}개)`);
+    assert.ok(tips.length <= 10, `${id}: 경험자 팁 ${tips.length}개 (최대 10개)`);
     assert.ok(items.some((c) => c.required), `${id}: 필수 항목이 없어요`);
   }
 });
@@ -68,8 +71,17 @@ test("공고문 문장(notice)은 공고문 문체('~합니다·~바랍니다·~
 });
 
 test("확인 완료(confirmed) 항목은 모두 공고문 문장이 있고, 검토 상태가 있어요", () => {
-  for (const c of CAUTIONS.filter((x) => x.status === "confirmed")) {
+  for (const c of CAUTIONS.filter((x) => x.status === "confirmed" && x.kind !== "tip")) {
     assert.ok(c.notice && c.notice.length > 0, `${c.id}: 공고문 문장이 없어요`);
     assert.ok(c.noticeStatus === "confirmed" || c.noticeStatus === "needs-check", `${c.id}: noticeStatus가 없어요`);
+  }
+});
+
+// ── 경험자 팁 (2026-10-29 조인우 결정: '경험자 팁' 표시, 3단계에 섞기, 판단은 안 함) ──
+test("경험자 팁은 필수가 아니고, 출처가 있으며, '사도 된다' 같은 판단 문구가 없어요", () => {
+  for (const c of CAUTIONS.filter((x) => x.kind === "tip")) {
+    assert.equal(c.required, false, `${c.id}: 경험자 팁은 필수가 될 수 없어요`);
+    assert.ok(c.sources.length > 0, `${c.id}: 출처가 없어요`);
+    assert.ok(!/(사도 된다|사도 돼요|추천|문제없|좋은 물건|나쁜 물건|가치가 있)/.test(c.plain), `${c.id}: 판단·권유 문구가 있어요`);
   }
 });

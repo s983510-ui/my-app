@@ -86,3 +86,23 @@ test("현장에서 볼 점(onSite): 80자 이내 문장이고 검토 상태가 �
   assert.ok(checkCautionTable([{ ...base, onSite: [""], onSiteStatus: "confirmed" }]).length > 0, "빈 문장은 걸러요");
   assert.ok(checkCautionTable([{ ...base, onSite: ["가".repeat(81)], onSiteStatus: "confirmed" }]).length > 0, "너무 긴 문장은 걸러요");
 });
+
+// ── 경험자 팁·세부 강조 조건 형식 (2026-10-29) ──
+import { checkCautionItem as checkTipItem } from "../lib/caution-check.ts";
+const tipBase = {
+  id: "vehicle-09", kind: "tip", category: "vehicle", title: "팁", text: "원문", plain: "쉬운 설명",
+  required: false, highlightWhen: null, steps: [], agency: "해당 없음",
+  sources: [{ label: "참고", url: "https://example.org/" }], status: "needs-check", checkedAt: "2026-10-29",
+};
+test("경험자 팁은 필수가 될 수 없어요", () => {
+  assert.deepEqual(checkTipItem(tipBase), []);
+  assert.ok(checkTipItem({ ...tipBase, required: true }).some((p) => p.includes("필수")));
+  assert.ok(checkTipItem({ ...tipBase, kind: "other" }).some((p) => p.includes("kind")));
+});
+test("강조 조건은 in·includes·ageAtLeast 중 하나만 써요", () => {
+  assert.deepEqual(checkTipItem({ ...tipBase, highlightWhen: { field: "차종·연식", includes: ["화물"] } }), []);
+  assert.deepEqual(checkTipItem({ ...tipBase, highlightWhen: { field: "차종·연식", ageAtLeast: 10 } }), []);
+  assert.ok(checkTipItem({ ...tipBase, highlightWhen: { field: "차종·연식", in: ["a"], includes: ["b"] } }).some((p) => p.includes("하나만")));
+  assert.ok(checkTipItem({ ...tipBase, highlightWhen: { field: "차종·연식", ageAtLeast: 0 } }).some((p) => p.includes("ageAtLeast")));
+  assert.ok(checkTipItem({ ...tipBase, highlightWhen: { field: "차종·연식", includes: [] } }).some((p) => p.includes("비었어요")));
+});

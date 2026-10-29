@@ -258,3 +258,33 @@ test("AI를 안 쓰는 요청(후보 고르기·링크)은 AI 횟수와 따로 �
   for (let i = 0; i < 5; i++) assert.equal(takeRequest("7.7.7.7", t0 + i).ok, true, "AI 요청 5회는 그대로 쓸 수 있어요");
   assert.equal(takeRequest("7.7.7.7", t0 + 10).ok, false);
 });
+
+// ── 세부 분류 강조(2026-10-29): 낱말 포함(includes), 오래된 정도(ageAtLeast), 경험자 팁 순서 ──
+test("includes: 칸 값에 낱말이 들어 있으면 강조해요 (예: 차종·연식에 '화물')", () => {
+  const it = item("vehicle-08", { highlightWhen: { field: "차종·연식", includes: ["화물"] } });
+  assert.equal(isHighlighted(it, { "차종·연식": "화물 / 2016년식" }), true);
+  assert.equal(isHighlighted(it, { "차종·연식": "승용 / 2016년식" }), false);
+  assert.equal(isHighlighted(it, {}), false);
+});
+
+test("ageAtLeast: 연도가 올해보다 그 햇수 이상 오래됐을 때만 강조하고, 연도가 없거나 여러 개면 강조하지 않아요", () => {
+  const it = item("vehicle-11", { highlightWhen: { field: "차종·연식", ageAtLeast: 10 } });
+  const now = new Date(Date.UTC(2026, 9, 29));
+  assert.equal(isHighlighted(it, { "차종·연식": "화물 / 2016년식" }, now), true);
+  assert.equal(isHighlighted(it, { "차종·연식": "승용 / 2017년식" }, now), false);
+  assert.equal(isHighlighted(it, { "차종·연식": "승용" }, now), false);
+  assert.equal(isHighlighted(it, { "차종·연식": "2010년식, 2020년 등록" }, now), false);
+  assert.equal(isHighlighted(it, { "차종·연식": "모델 20160" }, now), false);
+});
+
+test("경험자 팁은 tip 표시가 붙고, 같은 조건이면 법령·공식 안내 항목 뒤에 와요", () => {
+  const t2 = [
+    item("vehicle-01", { required: true }),
+    item("vehicle-02", { kind: "tip" }),
+    item("vehicle-03"),
+    item("vehicle-04", { kind: "tip", highlightWhen: { field: "차종·연식", includes: ["화물"] } }),
+  ];
+  const views = cautionsFor("vehicle", { "차종·연식": "화물 / 2016년식" }, t2, false);
+  assert.deepEqual(views.map((v) => v.id), ["vehicle-01", "vehicle-04", "vehicle-03", "vehicle-02"]);
+  assert.deepEqual(views.map((v) => v.tip), [false, true, false, true]);
+});

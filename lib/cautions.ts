@@ -26,19 +26,33 @@ function isVisible(item: CautionItem, includeUnreviewed: boolean): boolean {
   return item.status === "confirmed" || includeUnreviewed;
 }
 
-/** 강조 조건: 물건 정보의 그 칸 값이 목록 중 하나와 "정확히" 같아야 해요 (앞뒤 공백만 무시). */
-export function isHighlighted(item: CautionItem, property: PropertyInfo): boolean {
+/**
+ * 강조 조건이 맞는지 봐요. 짐작하지 않고 칸 값만 봐요.
+ * - in: 값이 목록 중 하나와 "정확히" 같을 때 (앞뒤 공백만 무시)
+ * - includes: 값에 낱말이 그대로 들어 있을 때
+ * - ageAtLeast: 값의 네 자리 연도(1950~올해)가 올해보다 그 햇수 이상 오래됐을 때. 연도가 없거나 여러 개면 강조하지 않아요
+ */
+export function isHighlighted(item: CautionItem, property: PropertyInfo, now: Date = new Date()): boolean {
   const cond = item.highlightWhen;
   if (!cond) return false;
   const value = property[cond.field];
   if (typeof value !== "string") return false;
-  return cond.in.indexOf(value.trim()) !== -1;
+  const v = value.trim();
+  if (cond.in) return cond.in.indexOf(v) !== -1;
+  if (cond.includes) return cond.includes.some((word) => v.indexOf(word) !== -1);
+  if (cond.ageAtLeast !== undefined) {
+    const thisYear = now.getFullYear();
+    const years = (v.match(/(?<!\d)(19[5-9]\d|20\d\d)(?!\d)/g) ?? []).map(Number).filter((y) => y <= thisYear);
+    if (years.length !== 1) return false;
+    return thisYear - years[0] >= cond.ageAtLeast;
+  }
+  return false;
 }
 
 /**
  * 종류에 맞는 주의사항 목록을 만들어요.
  * - 필수 항목이 하나라도 화면에 못 나가면(검토 전이면) TableIncompleteError를 던져요.
- * - 순서: 필수 → 해당 가능성 높음 → 나머지, 같으면 항목 번호 순.
+ * - 순서: 필수 → 해당 가능성 높음 → 법령·공식 안내 → 경험자 팁, 같으면 항목 번호 순.
  */
 export function cautionsFor(
   category: CategoryId,
@@ -60,6 +74,7 @@ export function cautionsFor(
       plain: item.plain,
       notice: item.notice && (item.noticeStatus === "confirmed" || includeUnreviewed) ? item.notice : "",
       required: item.required,
+      tip: item.kind === "tip",
       highlight: isHighlighted(item, property),
       steps: item.steps,
       onSite: item.onSite && (item.onSiteStatus === "confirmed" || includeUnreviewed) ? item.onSite : [],
@@ -72,6 +87,7 @@ export function cautionsFor(
   views.sort((a, b) => {
     if (a.required !== b.required) return a.required ? -1 : 1;
     if (a.highlight !== b.highlight) return a.highlight ? -1 : 1;
+    if (a.tip !== b.tip) return a.tip ? 1 : -1;
     return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
   });
   return views;
