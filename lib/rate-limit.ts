@@ -38,7 +38,7 @@ export function clientIp(headers: Headers): string {
   return "unknown";
 }
 
-/** 요청 하나를 세고, 허용되는지 알려줘요. 두 서버 API가 같은 함수를 써서 횟수를 공유해요. */
+/** AI를 쓰는 요청(분석·사진 읽기) 하나를 세고, 허용되는지 알려줘요. 이 둘이 같은 함수를 써서 횟수를 공유해요. */
 export function takeRequest(ip: string, now: number = Date.now()): { ok: boolean } {
   const perMinute = limitFromEnv("RATE_LIMIT_PER_MINUTE", 5);
   const perDay = limitFromEnv("RATE_LIMIT_PER_DAY", 500);
@@ -47,6 +47,7 @@ export function takeRequest(ip: string, now: number = Date.now()): { ok: boolean
   if (store.day !== day) {
     store.day = day;
     store.dayCount = 0;
+  lightStore.clear();
   }
   if (store.dayCount >= perDay) return { ok: false };
 
@@ -63,6 +64,28 @@ export function takeRequest(ip: string, now: number = Date.now()): { ok: boolean
   if (store.perIp.size > 5000) {
     for (const [key, times] of store.perIp) {
       if (times.every((t) => now - t >= MINUTE_MS)) store.perIp.delete(key);
+    }
+  }
+  return { ok: true };
+}
+
+// ───── AI를 쓰지 않는 요청(후보 고르기·링크 불러오기)의 횟수 ─────
+// AI 비용이 드는 요청(분석·사진 읽기)의 PRD 횟수(1분 5회·하루 500회)가 이런 요청 때문에 줄어들지 않게 따로 세요.
+// 접속자당 1분 20회만 막고, 하루 전체 횟수는 세지 않아요.
+const lightStore: Map<string, number[]> = new Map();
+
+export function takeLightRequest(ip: string, now: number = Date.now()): { ok: boolean } {
+  const perMinute = limitFromEnv("RATE_LIMIT_LIGHT_PER_MINUTE", 20);
+  const recent = (lightStore.get(ip) ?? []).filter((t) => now - t < MINUTE_MS);
+  if (recent.length >= perMinute) {
+    lightStore.set(ip, recent);
+    return { ok: false };
+  }
+  recent.push(now);
+  lightStore.set(ip, recent);
+  if (lightStore.size > 5000) {
+    for (const [key, times] of lightStore) {
+      if (times.every((t) => now - t >= MINUTE_MS)) lightStore.delete(key);
     }
   }
   return { ok: true };
