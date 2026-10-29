@@ -992,9 +992,8 @@ export const CAUTIONS: CautionItem[] = [
     checkedAt: "2026-10-29",
   },
 
-  // ───────── 차량 경험자 팁 초안 (2026-10-29, kind: "tip") — 검토 전 ─────────
-  // 법적 근거가 아니라 경험자들이 흔히 보는 점이에요. 출처는 검색으로 찾은 기사·글이고, 이 작업 공간에서는 원문을 열지 못했어요.
-  // 조인우 님이 출처 원문을 열어 내용이 맞는지 확인한 뒤에 confirmed로 바꿔요.
+  // ───────── 차량 경험자 팁 (2026-10-29, kind: "tip") — 조인우 검토 완료 ─────────
+  // 법적 근거가 아니라 경험자들이 흔히 보는 점이에요. 출처는 검색으로 찾은 기사·글이에요.
   {
     id: "vehicle-08",
     kind: "tip",
@@ -1005,10 +1004,11 @@ export const CAUTIONS: CautionItem[] = [
     required: false,
     highlightWhen: null,
     steps: ["현장에서 계기판 주행거리를 사진으로 남기세요", "핸들·페달·시트가 닳은 정도를 주행거리와 비교하세요"],
-    onSiteDraft: ["주행거리에 비해 핸들·페달·시트가 지나치게 닳거나 새것이 아닌지 비교하세요"],
+    onSite: ["주행거리에 비해 핸들·페달·시트가 지나치게 닳거나 새것이 아닌지 비교하세요"],
+    onSiteStatus: "confirmed",
     agency: "한국소비자원",
     sources: [{ label: "메트로신문 (2015, 한국소비자원 중고차 피해 통계)", url: "https://www.metroseoul.co.kr/article/2015041900120" }],
-    status: "needs-check",
+    status: "confirmed",
     checkedAt: "2026-10-29",
   },
   {
@@ -1021,17 +1021,18 @@ export const CAUTIONS: CautionItem[] = [
     required: false,
     highlightWhen: null,
     steps: ["카히스토리에서 보험 사고 이력을 먼저 조회하세요", "현장에서 틈·색·볼트 흔적을 직접 살펴보세요"],
-    onSiteDraft: [
+    onSite: [
       "문·보닛·트렁크 사이 틈이 좌우 비슷한지 확인하세요",
       "빛에 비춰 보아 색·광택이 다른 곳이나 도색한 흔적이 있는지 확인하세요",
       "엔진룸과 문 안쪽 볼트에 칠이 벗겨진 흔적이 있는지 확인하세요",
     ],
+    onSiteStatus: "confirmed",
     agency: "보험개발원(카히스토리)",
     sources: [
       { label: "중고차 상태 체크리스트 (위키독스 글)", url: "https://wikidocs.net/blog/@knarchive/15012/" },
       { label: "카히스토리 (보험개발원 자동차 이력 조회)", url: "https://www.carhistory.or.kr" },
     ],
-    status: "needs-check",
+    status: "confirmed",
     checkedAt: "2026-10-29",
   },
   {
@@ -1044,17 +1045,18 @@ export const CAUTIONS: CautionItem[] = [
     required: false,
     highlightWhen: null,
     steps: ["카히스토리에서 침수 이력을 먼저 조회하세요", "현장에서 안전벨트·녹·냄새를 직접 확인하세요"],
-    onSiteDraft: [
+    onSite: [
       "안전벨트를 끝까지 뽑아 진흙이나 물때가 묻어 있는지 확인하세요",
       "주유구 주변·트렁크 바닥처럼 물이 닿기 어려운 곳에 녹이 있는지 확인하세요",
       "에어컨·히터를 틀어 곰팡이나 퀴퀴한 냄새가 나는지 확인하세요",
     ],
+    onSiteStatus: "confirmed",
     agency: "보험개발원(카히스토리)",
     sources: [
       { label: "이투데이 카드뉴스 (침수차 구별하는 법)", url: "https://www.etoday.co.kr/news/view/1395317" },
       { label: "카히스토리 (보험개발원 자동차 이력 조회)", url: "https://www.carhistory.or.kr" },
     ],
-    status: "needs-check",
+    status: "confirmed",
     checkedAt: "2026-10-29",
   },
   {
@@ -1067,14 +1069,15 @@ export const CAUTIONS: CautionItem[] = [
     required: false,
     highlightWhen: { field: "차종·연식", ageAtLeast: 10 },
     steps: ["공고문에서 열람 일정과 시동 시험이 되는지 확인하세요", "현장에서 차 아래쪽과 타이어를 직접 살펴보세요"],
-    onSiteDraft: [
+    onSite: [
       "엔진룸과 차 아래 바닥에 기름이나 물이 새거나 스며든 자국이 있는지 확인하세요",
       "타이어 닳은 정도가 네 바퀴 모두 비슷한지 확인하세요",
       "시동 시험이 허용되면 이상한 소리·연기, 켜진 경고등이 없는지 확인하세요",
     ],
+    onSiteStatus: "confirmed",
     agency: "해당 없음 (경험자 팁)",
     sources: [{ label: "중고차 상태 체크리스트 (위키독스 글)", url: "https://wikidocs.net/blog/@knarchive/15012/" }],
-    status: "needs-check",
+    status: "confirmed",
     checkedAt: "2026-10-29",
   },
 
