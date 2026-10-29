@@ -79,7 +79,9 @@ export default function InputSources({ onText, disabled }: Props) {
     onText(r.data.text);
     setNotice(
       `${what}에서 읽은 글을 아래 칸에 넣었어요. 잘못 읽은 곳이 있으면 고친 뒤 [분석하기]를 눌러 주세요.` +
-        (r.data.masked ? " 개인정보 모양은 지웠어요." : ""),
+        (r.data.masked
+        ? " 전화번호·주민등록번호 모양은 지웠어요. 이름·주소 같은 다른 개인정보는 그대로이니 확인해 주세요."
+        : " 이름·주소 같은 개인정보는 지우지 못하니 확인해 주세요."),
     );
   }
 

@@ -60,3 +60,48 @@ test("HTML에서 보이는 글만 뽑아요 (스크립트·스타일 제거, 표
   assert.ok(text.includes("면적 1,652 ㎡"));
   for (const gone of ["비밀", "color:red", "주석", "켜 주세요", "<", ">"]) assert.ok(!text.includes(gone), `${gone}이(가) 남았어요`);
 });
+
+// ── 링크 읽기의 시간·이동 제한 (lib/fetch-link.ts). 내 PC의 시험용 서버만 열어요. ──
+import { createServer } from "node:http";
+import { fetchLinkText, LinkError, LINK_TOTAL_MS } from "../lib/fetch-link.ts";
+import { maxDurationOfFetchLinkRoute } from "./helpers/route-duration.mjs";
+
+function listen(handler) {
+  return new Promise((resolve) => {
+    const server = createServer(handler);
+    server.listen(0, "127.0.0.1", () => resolve({ server, url: new URL(`http://127.0.0.1:${server.address().port}/`) }));
+  });
+}
+
+test("링크 읽기: 답이 없으면 정해진 시간 안에 포기해요", async () => {
+  const { server, url } = await listen(() => {}); // 답을 주지 않아요
+  const started = Date.now();
+  try {
+    await assert.rejects(fetchLinkText(url, { hopMs: 300, totalMs: 600 }), LinkError);
+  } finally {
+    server.closeAllConnections();
+    server.close();
+  }
+  assert.ok(Date.now() - started < 2000, `${Date.now() - started}ms 걸렸어요`);
+});
+
+test("링크 읽기: 이동을 거듭해도 전체 시간을 넘기지 않아요", async () => {
+  let n = 0;
+  const { server, url } = await listen((req, res) => {
+    // 자기 자신으로 계속 이동시켜요. 이동 주소가 허용 목록 밖이라 첫 이동에서 막혀야 해요.
+    n += 1;
+    res.writeHead(302, { Location: `http://127.0.0.1:${server.address().port}/${n}` });
+    res.end();
+  });
+  try {
+    await assert.rejects(fetchLinkText(url, { hopMs: 300, totalMs: 600 }), LinkError);
+  } finally {
+    server.close();
+  }
+  assert.equal(n, 1, "허용되지 않은 주소로 이동하면 따라가지 않아요");
+});
+
+test("링크 읽기: 전체 제한(12초)이 서버 제한(maxDuration)보다 짧아요", async () => {
+  const max = await maxDurationOfFetchLinkRoute();
+  assert.ok(LINK_TOTAL_MS / 1000 < max, `전체 ${LINK_TOTAL_MS / 1000}초는 maxDuration ${max}초보다 짧아야 해요`);
+});
