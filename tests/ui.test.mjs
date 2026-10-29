@@ -268,3 +268,33 @@ test("사진이 아닌 파일이나 허용되지 않은 링크는 안내가 나�
     await browser.close();
   }
 });
+
+// ── 링크 실패 안내 ──
+test("물건 번호가 없는 온비드 주소는 서버에 묻지 않고 안내하고, 실패하면 해 볼 방법을 알려줘요", { skip, timeout: 60000 }, async () => {
+  const { chromium } = createRequire(import.meta.url)("playwright");
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 390, height: 900 } });
+  let serverCalls = 0;
+  page.on("request", (r) => {
+    if (r.url().includes("/api/fetch-link")) serverCalls++;
+  });
+  try {
+    await page.goto(BASE + "/");
+    await page.fill('input[type="url"]', "https://www.onbid.co.kr/op/cltrpbancinf/cltrdtl/CltrDtlController/mvmnCltrDtl.do");
+    await page.getByRole("button", { name: "링크 불러오기" }).click();
+    await page.getByRole("alert").filter({ hasText: "물건 번호가 빠진 주소 같아요" }).waitFor({ timeout: 5000 });
+    assert.ok(await page.getByText("링크가 안 읽힐 때는 이렇게 해 보세요").isVisible());
+    assert.equal(serverCalls, 0, "번호 없는 주소는 서버에 묻지 않아요");
+
+    // 번호가 있는 주소는 서버가 읽어 봐요. 이 시험 환경에서는 온비드에 연결되지 않으니 실패 안내가 나와요.
+    await page.fill('input[type="url"]', "https://www.onbid.co.kr/op/x.do?cltrNo=1");
+    await page.getByRole("button", { name: "링크 불러오기" }).click();
+    await page.getByRole("alert").filter({ hasText: /온비드|글|사진/ }).first().waitFor({ timeout: 30000 });
+    assert.equal(serverCalls, 1);
+    assert.ok(await page.getByText("링크가 안 읽힐 때는 이렇게 해 보세요").isVisible());
+    const alertText = await page.getByRole("alert").filter({ hasText: /온비드|글|사진/ }).first().innerText();
+    assert.ok(alertText.includes("사진") || alertText.includes("주소"), alertText);
+  } finally {
+    await browser.close();
+  }
+});
