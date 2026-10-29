@@ -50,8 +50,8 @@ export const CAUTIONS: CautionItem[] = [
     ],
     agency: "농지 소재지 시·구·읍·면 사무소",
     sources: [law("농지법", "제8조"), GOV24, ONBID],
-    status: "needs-check",
-    checkedAt: DRAFT_DATE,
+    status: "confirmed",
+    checkedAt: "2026-10-29",
   },
   {
     id: "farmland-02",
@@ -103,8 +103,8 @@ export const CAUTIONS: CautionItem[] = [
     ],
     agency: "시·군·구청 농지 담당 부서",
     sources: [law("농지법", "제10조"), law("농지법", "제11조"), law("농지법", "제63조")],
-    status: "needs-check",
-    checkedAt: DRAFT_DATE,
+    status: "confirmed",
+    checkedAt: "2026-10-29",
   },
   {
     id: "farmland-05",
