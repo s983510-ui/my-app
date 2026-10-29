@@ -12,10 +12,13 @@ test("표의 모든 항목이 형식을 지켜요 (출처 1개 이상, https, �
   assert.deepEqual(checkCautionTable(CAUTIONS), []);
 });
 
-test("종류 8개 모두 항목이 3~6개이고, 필수 항목이 1개 이상 있어요", () => {
+// PRD 6번: 부동산 5종과 차량은 최대 10개, 나머지는 3~6개
+const MAX_TEN = ["farmland", "forest", "land", "building-res", "building-nonres", "vehicle"];
+test("종류 8개 모두 항목 수가 기준 안이고(부동산 5종·차량 3~10개, 나머지 3~6개), 필수 항목이 1개 이상 있어요", () => {
   for (const id of CATEGORY_IDS) {
     const items = CAUTIONS.filter((c) => c.category === id);
-    assert.ok(items.length >= 3 && items.length <= 6, `${id}: 항목 ${items.length}개`);
+    const max = MAX_TEN.indexOf(id) !== -1 ? 10 : 6;
+    assert.ok(items.length >= 3 && items.length <= max, `${id}: 항목 ${items.length}개 (최대 ${max}개)`);
     assert.ok(items.some((c) => c.required), `${id}: 필수 항목이 없어요`);
   }
 });
