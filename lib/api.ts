@@ -3,7 +3,7 @@
 
 export type ErrorCode = "TEXT_LENGTH" | "BAD_CATEGORY" | "RATE_LIMITED" | "TABLE_INCOMPLETE" | "CONFIG" | "BAD_REQUEST";
 
-const MESSAGES: Record<ErrorCode, string> = {
+export const MESSAGES: Record<ErrorCode, string> = {
   TEXT_LENGTH: "20자 이상 10,000자 이하로 붙여넣어 주세요",
   BAD_CATEGORY: "종류를 다시 골라 주세요",
   RATE_LIMITED: "잠시 후 다시 시도해 주세요",

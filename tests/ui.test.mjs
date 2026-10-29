@@ -80,3 +80,50 @@ for (const c of cases) {
     }
   });
 }
+
+// ── 오류 안내 문구 (DESIGN §3.5·§7.1) ──
+// 서버 오류를 흉내 내서, 화면 위쪽 알림 칸에 문구가 그대로 나오는지 봐요.
+test("오류 6가지와 연결 문제 문구가 화면에 나와요", { skip, timeout: 120000 }, async () => {
+  const { chromium } = createRequire(import.meta.url)("playwright");
+  const { MESSAGES } = await import("../lib/api.ts");
+  const STATUS = { TEXT_LENGTH: 400, BAD_CATEGORY: 400, BAD_REQUEST: 400, RATE_LIMITED: 429, TABLE_INCOMPLETE: 500, CONFIG: 500 };
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 390, height: 900 } });
+  const text = SAMPLES[0].text;
+  try {
+    for (const code of ["TEXT_LENGTH", "RATE_LIMITED", "TABLE_INCOMPLETE", "CONFIG", "BAD_REQUEST"]) {
+      await page.route("**/api/analyze", (r) =>
+        r.fulfill({ status: STATUS[code], contentType: "application/json", body: JSON.stringify({ error: { code, message: MESSAGES[code] } }) }),
+      );
+      await page.goto(BASE + "/");
+      await page.fill("#paste", text);
+      await page.getByRole("button", { name: "분석하기" }).click();
+      await page.getByRole("alert").filter({ hasText: MESSAGES[code] }).waitFor({ timeout: 5000 });
+      await page.unroute("**/api/analyze");
+    }
+
+    // 연결이 끊긴 경우
+    await page.route("**/api/analyze", (r) => r.abort());
+    await page.goto(BASE + "/");
+    await page.fill("#paste", text);
+    await page.getByRole("button", { name: "분석하기" }).click();
+    await page.getByRole("alert").filter({ hasText: "연결에 문제가 있어요" }).waitFor({ timeout: 5000 });
+    await page.unroute("**/api/analyze");
+
+    // 후보를 고른 뒤 종류 확인 단계의 오류 (BAD_CATEGORY, TABLE_INCOMPLETE)
+    for (const code of ["BAD_CATEGORY", "TABLE_INCOMPLETE"]) {
+      await page.route("**/api/cautions", (r) =>
+        r.fulfill({ status: STATUS[code], contentType: "application/json", body: JSON.stringify({ error: { code, message: MESSAGES[code] } }) }),
+      );
+      await page.goto(BASE + "/");
+      await page.fill("#paste", "물건 설명: 오래된 물건 하나를 매각합니다. 자세한 내용은 현장 확인 바랍니다.");
+      await page.getByRole("button", { name: "분석하기" }).click();
+      await page.getByText("어떤 종류에 가까운지 골라 주세요").waitFor();
+      await page.getByRole("button", { name: "차량" }).click();
+      await page.getByRole("alert").filter({ hasText: MESSAGES[code] }).waitFor({ timeout: 5000 });
+      await page.unroute("**/api/cautions");
+    }
+  } finally {
+    await browser.close();
+  }
+});
