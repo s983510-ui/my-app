@@ -85,3 +85,13 @@ test("경험자 팁은 필수가 아니고, 출처가 있으며, '사도 된다'
     assert.ok(!/(사도 된다|사도 돼요|추천|문제없|좋은 물건|나쁜 물건|가치가 있)/.test(c.plain), `${c.id}: 판단·권유 문구가 있어요`);
   }
 });
+
+// ── 부동산 경험자 팁 기준치 (2026-10-29, 조인우 위임) 중 시험으로 잴 수 있는 것 ──
+const REAL_ESTATE = ["farmland", "forest", "land", "building-res", "building-nonres"];
+test("부동산 경험자 팁은 확정된 것이 종류마다 2개 이상이고, 확정된 팁은 출처가 2곳 이상이에요", () => {
+  for (const id of REAL_ESTATE) {
+    const tips = CAUTIONS.filter((c) => c.category === id && c.kind === "tip" && c.status === "confirmed");
+    assert.ok(tips.length >= 2, `${id}: 확정된 경험자 팁 ${tips.length}개 (2개 이상 필요)`);
+    for (const t of tips) assert.ok(t.sources.length >= 2, `${t.id}: 출처가 ${t.sources.length}곳뿐이에요 (2곳 이상 필요)`);
+  }
+});
