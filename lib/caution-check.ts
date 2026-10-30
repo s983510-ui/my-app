@@ -56,11 +56,13 @@ export function checkCautionItem(item: CautionItem): string[] {
     if (!h || (PROPERTY_FIELDS as readonly string[]).indexOf(h.field) === -1) {
       problems.push(`${where}: 강조 조건의 칸 이름이 물건 정보 칸 목록에 없어요`);
     }
-    const kinds = h ? [h.in, h.includes, h.ageAtLeast].filter((v) => v !== undefined).length : 0;
+    const kinds = h ? [h.in, h.includes, h.ageAtLeast, h.kmAtLeast].filter((v) => v !== undefined).length : 0;
     if (kinds !== 1) {
-      problems.push(`${where}: 강조 조건은 in·includes·ageAtLeast 중 하나만 써야 해요`);
+      problems.push(`${where}: 강조 조건은 in·includes·ageAtLeast·kmAtLeast 중 하나만 써야 해요`);
     } else if (h && h.ageAtLeast !== undefined) {
       if (!Number.isInteger(h.ageAtLeast) || h.ageAtLeast < 1) problems.push(`${where}: ageAtLeast는 1 이상의 정수여야 해요`);
+    } else if (h && h.kmAtLeast !== undefined) {
+      if (!Number.isInteger(h.kmAtLeast) || h.kmAtLeast < 1) problems.push(`${where}: kmAtLeast는 1 이상의 정수여야 해요`);
     } else {
       const list = h ? (h.in ?? h.includes) : undefined;
       if (!Array.isArray(list) || list.length === 0 || !list.every(isFilledText)) {

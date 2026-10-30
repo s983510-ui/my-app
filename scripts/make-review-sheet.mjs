@@ -59,7 +59,7 @@ for (const id of order) {
     if (item.kind === "tip") lines.push("- **종류:** 경험자 팁 (법적 근거 아님, 출처 원문을 열어 내용이 맞는지 확인해 주세요)");
     if (item.highlightWhen) {
       const h = item.highlightWhen;
-      const cond = h.in ? `값이 ${h.in.join("·")} 중 하나일 때` : h.includes ? `값에 ${h.includes.join("·")} 중 하나가 들어 있을 때` : `연도가 올해보다 ${h.ageAtLeast}년 이상 오래됐을 때`;
+      const cond = h.in ? `값이 ${h.in.join("·")} 중 하나일 때` : h.includes ? `값에 ${h.includes.join("·")} 중 하나가 들어 있을 때` : h.kmAtLeast !== undefined ? `거리가 ${h.kmAtLeast.toLocaleString("ko-KR")}km 이상일 때` : `연도가 올해보다 ${h.ageAtLeast}년 이상 오래됐을 때`;
       lines.push(`- **강조 조건:** '${h.field}' ${cond}`);
     }
     lines.push(`- **참고 절차:** ${item.steps.map((s, i) => `${i + 1}) ${s}`).join(" ")}`);

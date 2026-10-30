@@ -1536,4 +1536,33 @@ export const CAUTIONS: CautionItem[] = [
     status: "confirmed",
     checkedAt: "2026-10-29",
   },
+
+  // ───────── 주행거리 경험자 팁 (2026-10-30, kind: "tip") ─────────
+  // 같은 기준치(CHECK.md 4번)로 Claude가 검토·확정했어요(조인우 위임). 10만km 기준은 기사 3곳이 공통으로 말한 값이에요.
+  {
+    id: "vehicle-12",
+    kind: "tip",
+    category: "vehicle",
+    title: "주행거리 10만km 안팎이면 소모품 교체 이력부터",
+    text: "주행거리 10만km 전후는 타이밍벨트·하체·연료계통 같은 부품을 바꿀 때가 겹친다는 기사가 많아요. 교체 주기는 차종마다 다르니 사용설명서의 주기와 비교하고, 정비 기록이 있는지 확인하세요.",
+    plain: "주행거리 10만km 전후는 타이밍벨트·하체·연료계통 같은 부품을 바꿀 때가 겹친다는 기사가 많아요. 교체 주기는 차종마다 다르니 사용설명서의 주기와 비교하고, 정비 기록이 있는지 확인하세요.",
+    required: false,
+    highlightWhen: { field: "주행거리", kmAtLeast: 100000 },
+    steps: [
+      "공고문과 감정 자료에서 정비·교체 기록이 있는지 확인하세요",
+      "사용설명서(제조사 안내)의 소모품 교체 주기와 주행거리를 비교하세요",
+    ],
+    onSite: [
+      "차 안에 정비 기록부나 정비 영수증이 있는지 확인하세요",
+    ],
+    onSiteStatus: "confirmed",
+    agency: "해당 없음 (경험자 팁)",
+    sources: [
+      { label: "다음 뉴스 (자동차 10만km에 수백만 원 드는 이유)", url: "https://v.daum.net/v/Hr0XCwZwvP" },
+      { label: "위드뉴스 (10만km 정비 완료? 중고차 정비 기록 확인)", url: "https://car.withnews.kr/newcar/used-car-service-records" },
+      { label: "데일리안 (주행거리별 자동차 관리 팁)", url: "https://www.dailian.co.kr/news/view/434780/" },
+    ],
+    status: "confirmed",
+    checkedAt: "2026-10-29",
+  },
 ];

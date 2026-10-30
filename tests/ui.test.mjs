@@ -375,3 +375,24 @@ test("경험자 팁: 화물차(2016년식)에 '경험자 팁' 표시와 연식 �
     await browser.close();
   }
 });
+
+// ── 주행거리 칸 (2026-10-30): 물건 정보 표에 주행거리가 나오고, 10만km 넘으면 주행거리 팁에 강조가 붙어요 ──
+test("주행거리: 표에 나오고, 12만km면 '주행거리 10만km 안팎' 팁이 강조돼요", { skip, timeout: 60000 }, async () => {
+  const { chromium } = createRequire(import.meta.url)("playwright");
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 390, height: 900 } });
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  try {
+    await page.goto(BASE + "/");
+    await page.fill("#paste", "물건명: 승용자동차 (가상)\n차종·연식: 승용 / 2017년식\n주행거리: 약 123,456km\n최저입찰가: 5,500,000원\n비고: 현 상태 인도");
+    await page.getByRole("button", { name: "분석하기" }).click();
+    await page.getByText("약 123,456km").first().waitFor();
+    const card = page.locator("li", { hasText: "주행거리 10만km 안팎이면 소모품 교체 이력부터" });
+    await card.first().waitFor();
+    assert.equal(await card.getByText("해당 가능성 높음").count(), 1);
+    assert.deepEqual(errors, []);
+  } finally {
+    await browser.close();
+  }
+});
