@@ -34,9 +34,9 @@ test("강조 조건이 없으면 null로 둘 수 있어요", () => {
   assert.deepEqual(checkCautionItem(goodItem({ highlightWhen: null })), []);
 });
 
-test("물건 정보 칸은 DESIGN에 적힌 9개예요", () => {
+test("물건 정보 칸은 DESIGN에 적힌 9개에 주행거리(2026-10-30)를 더한 10개예요", () => {
   assert.deepEqual([...PROPERTY_FIELDS], [
-    "소재지", "지목", "면적", "용도지역", "건물 용도", "차종·연식", "품목", "최저입찰가", "공고 기관",
+    "소재지", "지목", "면적", "용도지역", "건물 용도", "차종·연식", "주행거리", "품목", "최저입찰가", "공고 기관",
   ]);
 });
 
@@ -105,4 +105,9 @@ test("강조 조건은 in·includes·ageAtLeast 중 하나만 써요", () => {
   assert.ok(checkTipItem({ ...tipBase, highlightWhen: { field: "차종·연식", in: ["a"], includes: ["b"] } }).some((p) => p.includes("하나만")));
   assert.ok(checkTipItem({ ...tipBase, highlightWhen: { field: "차종·연식", ageAtLeast: 0 } }).some((p) => p.includes("ageAtLeast")));
   assert.ok(checkTipItem({ ...tipBase, highlightWhen: { field: "차종·연식", includes: [] } }).some((p) => p.includes("비었어요")));
+});
+test("kmAtLeast 강조 조건은 1 이상의 정수여야 해요 (2026-10-30)", () => {
+  assert.deepEqual(checkTipItem({ ...tipBase, highlightWhen: { field: "주행거리", kmAtLeast: 100000 } }), []);
+  assert.ok(checkTipItem({ ...tipBase, highlightWhen: { field: "주행거리", kmAtLeast: 0 } }).some((p) => p.includes("kmAtLeast")));
+  assert.ok(checkTipItem({ ...tipBase, highlightWhen: { field: "주행거리", kmAtLeast: 1, ageAtLeast: 1 } }).some((p) => p.includes("하나만")));
 });

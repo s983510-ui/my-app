@@ -37,7 +37,7 @@ export type Category = {
 // ───── 물건 정보 칸 ─────
 // Design Ref: §4.5 — AI ①이 공고문에서 뽑는 칸이에요. 없는 칸은 null("공고문에 없음")이에요.
 
-/** 물건 정보 칸 이름 9개 */
+/** 물건 정보 칸 이름 10개 (주행거리는 2026-10-30 추가: 주행거리별 경험자 팁 강조용) */
 export const PROPERTY_FIELDS = [
   "소재지",
   "지목",
@@ -45,6 +45,7 @@ export const PROPERTY_FIELDS = [
   "용도지역",
   "건물 용도",
   "차종·연식",
+  "주행거리",
   "품목",
   "최저입찰가",
   "공고 기관",
@@ -63,12 +64,14 @@ export type PropertyInfo = Partial<Record<PropertyField, string | null>>;
  * - in: 칸 값이 목록 중 하나와 정확히 같을 때 (예: 지목 "답")
  * - includes: 칸 값에 낱말이 그대로 들어 있을 때 (예: 차종·연식에 "화물") — 2026-10-29 세부 분류용으로 추가
  * - ageAtLeast: 칸 값의 네 자리 연도가 올해보다 이 햇수 이상 오래됐을 때 (예: 10 → 10년 넘은 차)
+ * - kmAtLeast: 칸 값의 거리(km, "만" 단위 포함)가 이 값 이상일 때 (예: 100000 → 10만km 넘은 차) — 2026-10-30 추가
  */
 export type HighlightCondition = {
   field: PropertyField;
   in?: string[];
   includes?: string[];
   ageAtLeast?: number;
+  kmAtLeast?: number;
 };
 
 /** 근거 출처 (PRD must 2 규칙 3: 항목마다 1개 이상) */

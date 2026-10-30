@@ -17,7 +17,7 @@ export class ConfigError extends Error {}
 
 const SYSTEM_PROMPT = `당신은 온비드 공매 공고문에서 물건 정보를 뽑는 도우미입니다.
 [공고문]에 적힌 내용만 그대로 옮기세요. 적혀 있지 않은 칸은 null로 두고, 짐작하지 마세요.
-property의 칸 이름은 다음 9개만 쓰세요: ${PROPERTY_FIELDS.join(", ")}
+property의 칸 이름은 다음 ${PROPERTY_FIELDS.length}개만 쓰세요: ${PROPERTY_FIELDS.join(", ")}
 물건 종류는 아래 8개 id 중에서만 고르세요: ${CATEGORY_IDS.join(", ")}
 confidence는 0~1 사이 숫자로, 종류 판정을 얼마나 확신하는지 적으세요.
 clues에는 판정 근거가 된 [공고문]의 단어를 그대로 적으세요.
@@ -77,6 +77,7 @@ const LABELS: Record<string, string[]> = {
   용도지역: ["용도지역"],
   "건물 용도": ["건물 용도", "건물용도", "용도"],
   "차종·연식": ["차종·연식", "차종", "연식"],
+  주행거리: ["주행거리", "주행 거리"],
   품목: ["품목", "물품명"],
   최저입찰가: ["최저입찰가", "최저입찰가격"],
   "공고 기관": ["공고 기관", "공고기관", "처분기관"],

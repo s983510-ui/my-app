@@ -26,7 +26,7 @@ export type Decision =
   | { category: CategoryId; candidates: null }
   | { category: null; candidates: CategoryId[] };
 
-/** 빈 물건 정보 (9칸 모두 null) */
+/** 빈 물건 정보 (모든 칸 null) */
 export function emptyProperty(): PropertyInfo {
   const p: PropertyInfo = {};
   for (const f of PROPERTY_FIELDS) p[f] = null;

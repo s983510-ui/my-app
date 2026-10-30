@@ -31,6 +31,7 @@ function isVisible(item: CautionItem, includeUnreviewed: boolean): boolean {
  * - in: 값이 목록 중 하나와 "정확히" 같을 때 (앞뒤 공백만 무시)
  * - includes: 값에 낱말이 그대로 들어 있을 때
  * - ageAtLeast: 값의 네 자리 연도(1950~올해)가 올해보다 그 햇수 이상 오래됐을 때. 연도가 없거나 여러 개면 강조하지 않아요
+ * - kmAtLeast: 값의 거리(km)가 그 값 이상일 때. 숫자가 없거나 여러 개, 마일이면 강조하지 않아요
  */
 export function isHighlighted(item: CautionItem, property: PropertyInfo, now: Date = new Date()): boolean {
   const cond = item.highlightWhen;
@@ -46,7 +47,25 @@ export function isHighlighted(item: CautionItem, property: PropertyInfo, now: Da
     if (years.length !== 1) return false;
     return thisYear - years[0] >= cond.ageAtLeast;
   }
+  if (cond.kmAtLeast !== undefined) {
+    const km = readKm(v);
+    return km !== null && km >= cond.kmAtLeast;
+  }
   return false;
+}
+
+/**
+ * 주행거리 글을 km 숫자로 읽어요. 예: "약 98,000km" → 98000, "9.8만 km" → 98000, "12만km" → 120000.
+ * 숫자가 없거나 두 개 이상이면(예: "5만~6만km"), 마일로 적혀 있으면 null이에요. 짐작하지 않아요.
+ */
+export function readKm(value: string): number | null {
+  if (/마일|mile/i.test(value)) return null;
+  const nums = value.replace(/,/g, "").match(/\d+(?:\.\d+)?\s*만?/g) ?? [];
+  if (nums.length !== 1) return null;
+  const m = /^(\d+(?:\.\d+)?)\s*(만?)$/.exec(nums[0].trim());
+  if (!m) return null;
+  const n = Number(m[1]) * (m[2] ? 10000 : 1);
+  return Number.isFinite(n) ? Math.round(n) : null;
 }
 
 /**

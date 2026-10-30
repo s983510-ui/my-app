@@ -288,3 +288,26 @@ test("경험자 팁은 tip 표시가 붙고, 같은 조건이면 법령·공식 
   assert.deepEqual(views.map((v) => v.id), ["vehicle-01", "vehicle-04", "vehicle-03", "vehicle-02"]);
   assert.deepEqual(views.map((v) => v.tip), [false, true, false, true]);
 });
+
+// ── 주행거리 칸과 kmAtLeast 강조 (2026-10-30) ──
+import { readKm } from "../lib/cautions.ts";
+test("주행거리 글을 km로 읽어요 (쉼표·만 단위), 숫자가 둘 이상이거나 마일이면 읽지 않아요", () => {
+  assert.equal(readKm("약 98,000km"), 98000);
+  assert.equal(readKm("98000 km"), 98000);
+  assert.equal(readKm("9.8만 km"), 98000);
+  assert.equal(readKm("12만km"), 120000);
+  assert.equal(readKm("5만~6만km"), null);
+  assert.equal(readKm("60,000마일"), null);
+  assert.equal(readKm("확인 불가"), null);
+});
+test("kmAtLeast: 주행거리가 기준 이상일 때만 강조해요", () => {
+  const it = item("vehicle-12", { highlightWhen: { field: "주행거리", kmAtLeast: 100000 } });
+  assert.equal(isHighlighted(it, { 주행거리: "약 123,456km" }), true);
+  assert.equal(isHighlighted(it, { 주행거리: "10만 km" }), true);
+  assert.equal(isHighlighted(it, { 주행거리: "약 98,000km" }), false);
+  assert.equal(isHighlighted(it, {}), false);
+});
+test("시험용 흉내도 '주행거리:' 줄을 읽어요", () => {
+  const r = stubExtract("물건명: 승용차\n차종·연식: 승용 / 2019년식\n주행거리: 약 98,000km\n최저입찰가: 8,200,000원");
+  assert.equal(r.property["주행거리"], "약 98,000km");
+});
